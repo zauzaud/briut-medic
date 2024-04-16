@@ -1,6 +1,9 @@
-const connection = require('../database');
+const express = require('express');
+const app = express();
 
-connection.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
-  if (error) throw error;
-  console.log('The solution is: ', results[0].solution);
+// definição de middlewares e rota
+app.get('/', (req, res) => {
+  res.send('Hello World!');
 });
+
+module.exports = app;
