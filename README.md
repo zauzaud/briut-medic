@@ -4,7 +4,7 @@ Este repositório contém o código-fonte e a documentação do Sistema de Gest�
 
 Descrição do Projeto
 
-Desenvolvimento de um sistema abrangente para gerenciar operações da Clínica XYZ, incluindo agendamento de pacientes, controle de estoque e finanças.
+Desenvolvimento de um sistema abrangente para gerenciar operações de uma Clinica M[edica, incluindo agendamento de pacientes, controle de estoque e finanças.
 
 
 
