@@ -1,6 +1,5 @@
-const express = require('express');
-const app = express();
-const port = 3000;
+const app = require('./src/app');  // Importa a configuração do aplicativo Express
+const port = 3000;                // Define a porta em que o servidor será iniciado
 
 // Importando a conexão do banco de dados
 const connection = require('./src/config/database');
