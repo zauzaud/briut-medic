@@ -1,7 +1,6 @@
-// src/controllers/agendamentoController.js
 const Agendamento = require('../models/Agendamento');
 
-// Cria um novo agendamento.
+// cria um novo agendamento
 exports.criarAgendamento = async (req, res) => {
     try {
         const novoAgendamento = await Agendamento.create(req.body);
@@ -11,7 +10,7 @@ exports.criarAgendamento = async (req, res) => {
     }
 };
 
-// Recupera todos os agendamentos.
+// recupera todos
 exports.listarTodosAgendamentos = async (req, res) => {
     try {
         const agendamentos = await Agendamento.findAll();
@@ -21,7 +20,7 @@ exports.listarTodosAgendamentos = async (req, res) => {
     }
 };
 
-// Recupera um agendamento pelo ID.
+// recupera um agendamento pelo ID
 exports.buscarAgendamentoPorId = async (req, res) => {
     try {
         const agendamento = await Agendamento.findByPk(req.params.id);
@@ -35,7 +34,7 @@ exports.buscarAgendamentoPorId = async (req, res) => {
     }
 };
 
-// Atualiza um agendamento pelo ID.
+// atualiza um agendamento pelo ID
 exports.atualizarAgendamento = async (req, res) => {
     try {
         const resultado = await Agendamento.update(req.body, {
@@ -52,7 +51,7 @@ exports.atualizarAgendamento = async (req, res) => {
     }
 };
 
-// Exclui um agendamento pelo ID.
+// exclui um agendamento pelo ID
 exports.excluirAgendamento = async (req, res) => {
     try {
         const resultado = await Agendamento.destroy({

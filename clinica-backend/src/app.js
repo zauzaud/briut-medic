@@ -1,12 +1,15 @@
-// src/app.js
 const express = require('express');
-const app = express();
+const usuarioRoutes = require('./routes/usuarioRoutes');
 const agendamentoRoutes = require('./routes/agendamentoRoutes');
+const estoqueRoutes = require('./routes/estoqueRoutes');
+const financeiroRoutes = require('./routes/financeiroRoutes');
 
-// Middleware para analisar o corpo das requisições JSON.
+const app = express();
+
 app.use(express.json());
-
-// Rotas para gerenciamento de agendamentos.
+app.use('/usuarios', usuarioRoutes);
 app.use('/agendamentos', agendamentoRoutes);
+app.use('/estoque', estoqueRoutes);
+app.use('/financeiro', financeiroRoutes);
 
 module.exports = app;

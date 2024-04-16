@@ -1,4 +1,3 @@
-// src/models/Agendamento.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
@@ -26,7 +25,7 @@ const Agendamento = sequelize.define('Agendamento', {
     }
 }, {
     tableName: 'Agendamento',
-    timestamps: false // Desativa a geração automática de timestamps (createdAt, updatedAt).
+    timestamps: false // Desativa a geração automatica de timestamps 
 });
 
 module.exports = Agendamento;
