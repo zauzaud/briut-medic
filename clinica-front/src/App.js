@@ -1,24 +1,29 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Home from './components/Home';
+import Usuarios from './components/Usuarios';
+import Agendamentos from './components/Agendamentos';
+import Estoque from './components/Estoque';
+import Financeiro from './components/Financeiro';
+import NotFound from './components/NotFound';  // Um componente para tratar rotas não encontradas
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div>
+        <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/usuarios" element={<Usuarios />} />
+        <Route path="/agendamentos" element={<Agendamentos />} />
+        <Route path="/estoque" element={<Estoque />} />
+        <Route path="/financeiro" element={<Financeiro />} />
+        <Route path="*" element={<div>Página Não Encontrada</div>} />
+        <Route path="/notfound" element={<NotFound />} />  
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
