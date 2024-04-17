@@ -7,7 +7,7 @@ import Estoque from './components/Estoque';
 import Financeiro from './components/Financeiro';
 import NotFound from './components/NotFound';  // Um componente para tratar rotas não encontradas
 import 'bootstrap/dist/css/bootstrap.min.css';
-
+import './App.css'
 
 function App() {
   return (
