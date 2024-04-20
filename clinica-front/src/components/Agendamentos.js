@@ -1,8 +1,7 @@
-// src/components/Agendamentos.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import NavBar from './NavBar';
-import './Agendamentos.css';
+
 
 function Agendamentos() {
     const [agendamentos, setAgendamentos] = useState([]);
@@ -18,9 +17,9 @@ function Agendamentos() {
     }, []);
 
     return (
-        <div>
+        <div className='flex'>
             <NavBar />
-            <div className="agendamentos-container">
+            <div className="flex-1 p-10">
                 <h1>Agendamentos</h1>
                 <ul>
                     {agendamentos.map(agendamento => (

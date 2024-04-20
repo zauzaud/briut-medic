@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import NavBar from './NavBar';
-import './Estoque.css';
+
 
 function Estoque() {
     const [estoque, setEstoque] = useState([]);
@@ -17,9 +17,9 @@ function Estoque() {
     }, []);
 
     return (
-        <div>
+        <div className="flex">
             <NavBar />
-            <div className="estoque-container">
+            <div className="flex-1 p-10">
                 <h1>Estoque</h1>
                 <ul>
                     {estoque.map(item => (

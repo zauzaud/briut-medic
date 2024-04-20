@@ -1,4 +1,3 @@
-// src/components/UsuariosTable.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Table, Button } from 'react-bootstrap';
