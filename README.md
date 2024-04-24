@@ -24,11 +24,13 @@ Won’t Have (initially): Funcionalidades complexas de recursos humanos ou anál
 Tecnologias Utilizadas
 
 
-Frontend: React
+Frontend: React com Tailwind css
 
 Backend: Node.js com Express
 
 Banco de dados: MySQL
+
+Postman API
 
 
 Fases de Implementação
