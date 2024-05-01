@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBox, faCalendarAlt, faUsers, faMoneyBillWave, faHandPaper } from '@fortawesome/free-solid-svg-icons';
+import logoClinica from '../assets/images/logo_briut.png'; // Verifique se o caminho está correto
 
 function IconWithText({ icon, text, to }) {
     return (
@@ -22,12 +23,11 @@ function NavBar() {
 
     return (
         <div className="flex flex-col justify-between h-screen bg-white rounded-2xl shadow-2xl max-w-[280px]">
-            <div>
-                <header className="flex gap-2 self-start ml-6 text-xl font-semibold leading-7 text-slate-900">
-                    <FontAwesomeIcon icon={faMoneyBillWave} className="shrink-0 w-8 h-8" />
-                    <h1 className="my-auto">Instituto Briut</h1>
+            <div className="p-0">
+                <header className="flex justify-center items-center my-2">
+                    <img src={logoClinica} alt="Logo do Instituto Briut" className="h-16" style={{ width: 'auto' }} />  
                 </header>
-                <nav className="mt-14 w-full">
+                <nav className="mt-4 w-full">
                     {menuItems.map((item, index) => (
                         <IconWithText key={index} icon={item.icon} text={item.text} to={item.to} />
                     ))}
