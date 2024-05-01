@@ -1,17 +1,18 @@
 const Usuario = require('../models/Usuario');
 
-// cria um novo usuário
+// cria um novo usuário usando o método com transação
 exports.criarUsuario = async (req, res) => {
     try {
-        const novoUsuario = await Usuario.create({
+        const novoUsuario = await Usuario.criarComTransacao({
             nome: req.body.nome,
             tipo: req.body.tipo
         });
         res.status(201).send(novoUsuario);
     } catch (erro) {
-        res.status(500).send(erro);
+        res.status(500).send({ mensagem: "Erro ao criar usuário", erro });
     }
 };
+
 
 // lista todos os usuários
 exports.listarTodosUsuarios = async (req, res) => {

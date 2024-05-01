@@ -27,4 +27,18 @@ const Estoque = sequelize.define('Estoque', {
     timestamps: false
 });
 
+
+// Método para criar estoque com transação
+Estoque.criarComTransacao = async function(dadosEstoque) {
+    const t = await sequelize.transaction();
+    try {
+        const estoque = await this.create(dadosEstoque, { transaction: t });
+        await t.commit();
+        return estoque;
+    } catch (error) {
+        await t.rollback();
+        throw error; // Lançar o erro para ser capturado pelo controlador
+    }
+};
+
 module.exports = Estoque;

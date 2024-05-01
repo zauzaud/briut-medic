@@ -1,12 +1,17 @@
 const Agendamento = require('../models/Agendamento');
 
-// cria um novo agendamento
+// cria um novo agendamento usando o método com transação
 exports.criarAgendamento = async (req, res) => {
     try {
-        const novoAgendamento = await Agendamento.create(req.body);
+        const novoAgendamento = await Agendamento.criarComTransacao({
+            usuario_id: req.body.usuario_id,
+            data_hora: req.body.data_hora,
+            servico: req.body.servico,
+            status: req.body.status
+        });
         res.status(201).send(novoAgendamento);
     } catch (erro) {
-        res.status(500).send(erro);
+        res.status(500).send({ mensagem: "Erro ao criar agendamento", erro });
     }
 };
 

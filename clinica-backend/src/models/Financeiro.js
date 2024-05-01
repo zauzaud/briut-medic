@@ -27,4 +27,17 @@ const Financeiro = sequelize.define('Financeiro', {
     timestamps: false
 });
 
+// Método para criar financeiro com transação
+Financeiro.criarComTransacao = async function(dadosFinanceiro) {
+    const t = await sequelize.transaction();
+    try {
+        const financeiro = await this.create(dadosFinanceiro, { transaction: t });
+        await t.commit();
+        return financeiro;
+    } catch (error) {
+        await t.rollback();
+        throw error; // Lançar o erro para ser capturado pelo controlador
+    }
+};
+
 module.exports = Financeiro;

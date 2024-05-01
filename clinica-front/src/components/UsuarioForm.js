@@ -1,50 +1,56 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Form, Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
-function UsuarioForm({ usuarioInicial, onSubmit }) {
-  const [usuario, setUsuario] = useState(usuarioInicial || { nome: '', tipo: '' });
+function UsuarioForm({ usuario, onFormSubmit }) {
+    const [nome, setNome] = useState(usuario.nome || '');
+    const [tipo, setTipo] = useState(usuario.tipo || '');
+    const navigate = useNavigate();
+    const [error, setError] = useState('');
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setUsuario(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
-  };
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        try {
+            const usuarioData = { nome, tipo };
+            const response = usuario.id
+                ? await axios.put(`http://localhost:3000/usuarios/${usuario.id}`, usuarioData)
+                : await axios.post('http://localhost:3000/usuarios', usuarioData);
+            onFormSubmit();
+            navigate('/usuarios');
+            alert(`Usuário salvo: ${response.data.nome}`);  
+        } catch (error) {
+            console.error('Falha ao salvar o usuário', error);
+            setError('Erro ao salvar o usuário. Por favor, tente novamente.');
+        }
+    };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    onSubmit(usuario);
-  };
-
-  return (
-    <Form onSubmit={handleSubmit}>
-      <Form.Group controlId="formNome">
-        <Form.Label>Nome</Form.Label>
-        <Form.Control
-          type="text"
-          name="nome"
-          value={usuario.nome}
-          onChange={handleChange}
-          placeholder="Digite o nome do usuário"
-        />
-      </Form.Group>
-      <Form.Group controlId="formTipo">
-        <Form.Label>Tipo</Form.Label>
-        <Form.Control
-          type="text"
-          name="tipo"
-          value={usuario.tipo}
-          onChange={handleChange}
-          placeholder="Digite o tipo do usuário"
-        />
-      </Form.Group>
-      <Button variant="primary" type="submit">
-        Salvar
-      </Button>
-    </Form>
-  );
+    return (
+        <form onSubmit={handleSubmit}>
+            {error && <p className="text-red-500">{error}</p>}
+            <label htmlFor="nome">Nome:</label>
+            <input
+                type="text"
+                id="nome"
+                value={nome}
+                onChange={e => setNome(e.target.value)}
+                required
+            />
+            <label htmlFor="tipo">Tipo:</label>
+            <select
+                id="tipo"
+                value={tipo}
+                onChange={e => setTipo(e.target.value)}
+                required
+            >
+                <option value="">Selecione um tipo</option>
+                <option value="Administrador">Administrador</option>
+                <option value="Médico">Médico</option>
+                <option value="Paciente">Paciente</option>
+                <option value="Outro">Outro</option>
+            </select>
+            <button type="submit">Salvar</button>
+        </form>
+    );
 }
 
 export default UsuarioForm;

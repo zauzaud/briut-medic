@@ -2,7 +2,7 @@ const Estoque = require('../models/Estoque');
 
 exports.adicionarItem = async (req, res) => {
     try {
-        const novoItem = await Estoque.create({
+        const novoItem = await Estoque.criarComTransacao({
             produto: req.body.produto,
             quantidade: req.body.quantidade
         });

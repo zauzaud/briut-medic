@@ -2,7 +2,7 @@ const Financeiro = require('../models/Financeiro');
 
 exports.adicionarTransacao = async (req, res) => {
     try {
-        const novaTransacao = await Financeiro.create({
+        const novaTransacao = await Financeiro.criarComTransacao({
             tipo_transacao: req.body.tipo_transacao,
             valor: req.body.valor,
             data: req.body.data,

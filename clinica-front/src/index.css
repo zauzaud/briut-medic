@@ -3,11 +3,6 @@
 @tailwind utilities;
 
 
-.test-tailwind {
-  @apply bg-blue-500 text-white p-5;
-}
-
-
 
 body {
   margin: 0;

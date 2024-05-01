@@ -1,15 +1,10 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
-// Define o modelo 'Agendamento', correspondendo à tabela 'Agendamento' no banco de dados.
 const Agendamento = sequelize.define('Agendamento', {
     usuario_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'Usuario',
-            key: 'id'
-        }
+        allowNull: false
     },
     data_hora: {
         type: DataTypes.DATE,
@@ -25,7 +20,20 @@ const Agendamento = sequelize.define('Agendamento', {
     }
 }, {
     tableName: 'Agendamento',
-    timestamps: false // Desativa a geração automatica de timestamps 
+    timestamps: false
 });
+
+// Método para criar agendamento com transação
+Agendamento.criarComTransacao = async function(dadosAgendamento) {
+    const t = await sequelize.transaction();
+    try {
+        const agendamento = await this.create(dadosAgendamento, { transaction: t });
+        await t.commit();
+        return agendamento;
+    } catch (error) {
+        await t.rollback();
+        throw error; // Lançar o erro para ser capturado pelo controlador
+    }
+};
 
 module.exports = Agendamento;
