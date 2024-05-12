@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './components/Home';
 import Usuarios from './components/Usuarios';
 import UsuarioForm from './components/UsuarioForm';
-import Agendamentos from './components/Agendamentos';
+import Calendario from './components/Calendario';
 import Estoque from './components/Estoque';
 import Financeiro from './components/Financeiro';
 import FinanceiroForm from './components/FinanceiroForm';
@@ -20,7 +20,7 @@ function App() {
           <Route path="/usuarios" element={<Usuarios />} />
           <Route path="/usuarios/novo" element={<UsuarioForm />} />
           <Route path="/usuarios/editar/:id" element={<UsuarioForm />} />
-          <Route path="/agendamentos" element={<Agendamentos />} />
+          <Route path="/agendamentos" element={<Calendario />} />
           <Route path="/estoque" element={<Estoque />} />
           <Route path="/financeiro" element={<Financeiro />} />
           <Route path="/financeiro/novo" element={<FinanceiroForm />} />
