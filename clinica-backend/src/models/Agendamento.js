@@ -10,6 +10,10 @@ const Agendamento = sequelize.define('Agendamento', {
         type: DataTypes.DATE,
         allowNull: false
     },
+    data_hora_fim: {
+        type: DataTypes.DATE,
+        allowNull: false
+    },
     servico: {
         type: DataTypes.STRING,
         allowNull: false

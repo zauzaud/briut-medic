@@ -1,50 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 
-
-function formatDate(dateString) {
-    const [date, time, modifier] = dateString.split(' ');
-    let [hours, minutes] = time.split(':');
-    if (modifier === 'PM' && hours < 12) hours = parseInt(hours, 10) + 12;
-    if (modifier === 'AM' && hours === '12') hours = '00'; // Midnight edge case
-    return `${date.split('/').reverse().join('-')} ${hours}:${minutes}:00`;
-}
-
 function CalendarioForm({ event, onEventAdded }) {
-    const [titulo, setTitulo] = useState(event ? event.title : '');
-    const [dataInicio, setDataInicio] = useState(event ? event.start : '');
-    const [dataFim, setDataFim] = useState(event ? event.end : '');
-    const [usuarioId, setUsuarioId] = useState(event ? event.usuario_id : '');
-    const [servico, setServico] = useState(event ? event.servico : '');
-    const [status, setStatus] = useState(event ? event.status : 'agendado');
+    const [titulo, setTitulo] = useState(event.title || '');
+    const [dataInicio, setDataInicio] = useState(event.start || '');
+    const [dataFim, setDataFim] = useState(event.end || '');
+    const [usuarioId, setUsuarioId] = useState(event.usuario_id || '');
+    const [servico, setServico] = useState(event.servico || '');
+    const [status, setStatus] = useState(event.status || 'agendado');
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (event.id) {
+            // Load existing event details if editing
+            axios.get(`http://localhost:3000/agendamentos/${event.id}`)
+                .then(response => {
+                    const { titulo, start, end, usuario_id, servico, status } = response.data;
+                    setTitulo(titulo);
+                    setDataInicio(start);
+                    setDataFim(end);
+                    setUsuarioId(usuario_id);
+                    setServico(servico);
+                    setStatus(status);
+                })
+                .catch(error => console.error('Erro ao buscar detalhes do evento:', error));
+        }
+    }, [event]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-
         const newEvent = {
+            titulo,
+            data_hora: dataInicio,
+            data_hora_fim: dataFim,
             usuario_id: usuarioId,
-            data_hora: formatDate(dataInicio),
-            data_hora_fim: formatDate(dataFim),
-            servico: servico,
-            status: status
+            servico,
+            status
         };
-    
+
         try {
-            const url = event && event.id ? `http://localhost:3000/agendamentos/${event.id}` : 'http://localhost:3000/agendamentos';
-            const method = event && event.id ? 'put' : 'post';
-    
-            const response = await axios({
-                method: method,
-                url: url,
-                data: newEvent
-            });
-    
+            const url = event.id ? `http://localhost:3000/agendamentos/${event.id}` : 'http://localhost:3000/agendamentos';
+            const method = event.id ? 'put' : 'post';
+
+            const response = await axios({ method, url, data: newEvent });
             if (response.status === 200 || response.status === 201) {
-                Swal.fire('Sucesso!', 'Evento adicionado/atualizado com sucesso!', 'success');
                 onEventAdded(newEvent);
                 navigate('/agendamentos');
             } else {
