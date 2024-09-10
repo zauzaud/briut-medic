@@ -2,6 +2,11 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
 const Agendamento = sequelize.define('Agendamento', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
     usuario_id: {
         type: DataTypes.INTEGER,
         allowNull: false
@@ -15,17 +20,19 @@ const Agendamento = sequelize.define('Agendamento', {
         allowNull: false
     },
     servico: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(100),
         allowNull: false
     },
     status: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(50),
         allowNull: false
     }
 }, {
     tableName: 'Agendamento',
     timestamps: false
 });
+
+module.exports = Agendamento;
 
 // Método para criar agendamento com transação
 Agendamento.criarComTransacao = async function(dadosAgendamento) {

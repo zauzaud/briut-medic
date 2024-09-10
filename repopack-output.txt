@@ -1,0 +1,2185 @@
+================================================================
+File Summary
+================================================================
+
+Purpose:
+--------
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+
+File Format:
+------------
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Repository structure
+4. Multiple file entries, each consisting of:
+  a. A separator line (================)
+  b. The file path (File: path/to/file)
+  c. Another separator line
+  d. The full contents of the file
+  e. A blank line
+
+Usage Guidelines:
+-----------------
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+
+Notes:
+------
+- Some files may have been excluded based on .gitignore rules and Repopack's
+  configuration.
+- Binary files are not included in this packed representation. Please refer to
+  the Repository Structure section for a complete list of file paths, including
+  binary files.
+
+Additional Info:
+----------------
+
+For more information about Repopack, visit: https://github.com/yamadashy/repopack
+
+================================================================
+Repository Structure
+================================================================
+.gitattributes
+clinica-backend/package-lock.json
+clinica-backend/package.json
+clinica-backend/server.js
+clinica-backend/src/app.js
+clinica-backend/src/config/database.js
+clinica-backend/src/config/sequelize.js
+clinica-backend/src/controllers/agendamentoController.js
+clinica-backend/src/controllers/estoqueController.js
+clinica-backend/src/controllers/financeiroController.js
+clinica-backend/src/controllers/usuarioController.js
+clinica-backend/src/models/Agendamento.js
+clinica-backend/src/models/Estoque.js
+clinica-backend/src/models/Financeiro.js
+clinica-backend/src/models/Usuario.js
+clinica-backend/src/routes/agendamentoRoutes.js
+clinica-backend/src/routes/estoqueRoutes.js
+clinica-backend/src/routes/financeiroRoutes.js
+clinica-backend/src/routes/usuarioRoutes.js
+clinica-front/.gitignore
+clinica-front/package-lock.json
+clinica-front/package.json
+clinica-front/postcss.config.js
+clinica-front/public/index.html
+clinica-front/public/manifest.json
+clinica-front/public/robots.txt
+clinica-front/README.md
+clinica-front/src/App.js
+clinica-front/src/App.test.js
+clinica-front/src/components/Agendamentos.js
+clinica-front/src/components/Calendario.js
+clinica-front/src/components/CalendarioForm.js
+clinica-front/src/components/Estoque.js
+clinica-front/src/components/EstoqueForm.js
+clinica-front/src/components/Financeiro.js
+clinica-front/src/components/FinanceiroForm.js
+clinica-front/src/components/Home.js
+clinica-front/src/components/NavBar.js
+clinica-front/src/components/Navigation.js
+clinica-front/src/components/NotFound.js
+clinica-front/src/components/UsuarioForm.js
+clinica-front/src/components/Usuarios.js
+clinica-front/src/components/UsuarioTable.js
+clinica-front/src/index.css
+clinica-front/src/index.js
+clinica-front/src/logo.svg
+clinica-front/src/reportWebVitals.js
+clinica-front/src/setupTests.js
+clinica-front/tailwind.config.js
+LICENSE
+package.json
+README.md
+
+================================================================
+Repository Files
+================================================================
+
+================
+File: .gitattributes
+================
+# Auto detect text files and perform LF normalization
+* text=auto
+
+================
+File: clinica-backend/src/app.js
+================
+const express = require('express');
+const cors = require('cors');
+const usuarioRoutes = require('./routes/usuarioRoutes');
+const agendamentoRoutes = require('./routes/agendamentoRoutes');
+const estoqueRoutes = require('./routes/estoqueRoutes');
+const financeiroRoutes = require('./routes/financeiroRoutes');
+
+const app = express();
+
+// Configuração do CORS antes das rotas
+app.use(cors({
+    origin: 'http://localhost:3001', // Permitir apenas o front-end para acessar
+    optionsSuccessStatus: 200 // Alguns navegadores legados (IE11, vários SmartTVs) não entendem 204
+}));
+
+app.use(express.json());
+app.use('/usuarios', usuarioRoutes);
+app.use('/agendamentos', agendamentoRoutes);
+app.use('/estoque', estoqueRoutes);
+app.use('/financeiro', financeiroRoutes);
+
+module.exports = app;
+
+================
+File: clinica-backend/src/config/database.js
+================
+const mysql = require('mysql2');
+
+// conexão com o banco
+const connection = mysql.createPool({
+  host: 'localhost', 
+  user: 'root', 
+  password: 'root', 
+  database: 'clinicadb', 
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});
+
+module.exports = connection;
+
+================
+File: clinica-backend/src/config/sequelize.js
+================
+const { Sequelize } = require('sequelize');
+
+const sequelize = new Sequelize('clinicadb', 'root', 'root', {
+    host: 'localhost',
+    dialect: 'mysql'
+});
+
+module.exports = sequelize;
+
+================
+File: clinica-backend/src/controllers/agendamentoController.js
+================
+const Agendamento = require('../models/Agendamento');
+
+// cria um novo agendamento usando o método com transação
+exports.criarAgendamento = async (req, res) => {
+    try {
+        const novoAgendamento = await Agendamento.criarComTransacao({
+            usuario_id: req.body.usuario_id,
+            data_hora: req.body.data_hora,
+            servico: req.body.servico,
+            status: req.body.status
+        });
+        res.status(201).send(novoAgendamento);
+    } catch (erro) {
+        res.status(500).send({ mensagem: "Erro ao criar agendamento", erro });
+    }
+};
+
+// recupera todos
+exports.listarTodosAgendamentos = async (req, res) => {
+    try {
+        const agendamentos = await Agendamento.findAll();
+        res.send(agendamentos);
+    } catch (erro) {
+        res.status(500).send(erro);
+    }
+};
+
+// recupera um agendamento pelo ID
+exports.buscarAgendamentoPorId = async (req, res) => {
+    try {
+        const agendamento = await Agendamento.findByPk(req.params.id);
+        if (agendamento) {
+            res.send(agendamento);
+        } else {
+            res.status(404).send({ mensagem: "Agendamento não encontrado!" });
+        }
+    } catch (erro) {
+        res.status(500).send(erro);
+    }
+};
+
+// atualiza um agendamento pelo ID
+exports.atualizarAgendamento = async (req, res) => {
+    try {
+        const resultado = await Agendamento.update(req.body, {
+            where: { id: req.params.id }
+        });
+
+        if (resultado[0] === 1) {
+            res.send({ mensagem: "Agendamento atualizado com sucesso." });
+        } else {
+            res.status(404).send({ mensagem: "Agendamento não encontrado ou dados inválidos para atualização." });
+        }
+    } catch (erro) {
+        res.status(500).send(erro);
+    }
+};
+
+// exclui um agendamento pelo ID
+exports.excluirAgendamento = async (req, res) => {
+    try {
+        const resultado = await Agendamento.destroy({
+            where: { id: req.params.id }
+        });
+
+        if (resultado === 1) {
+            res.send({ mensagem: "Agendamento excluído com sucesso." });
+        } else {
+            res.status(404).send({ mensagem: "Agendamento não encontrado." });
+        }
+    } catch (erro) {
+        res.status(500).send(erro);
+    }
+};
+
+================
+File: clinica-backend/src/controllers/estoqueController.js
+================
+const Estoque = require('../models/Estoque');
+
+exports.adicionarItem = async (req, res) => {
+    try {
+        const novoItem = await Estoque.criarComTransacao({
+            produto: req.body.produto,
+            quantidade: req.body.quantidade
+        });
+        res.status(201).send(novoItem);
+    } catch (erro) {
+        res.status(500).send(erro.toString());
+    }
+};
+
+exports.listarTodosItens = async (req, res) => {
+    try {
+        const itens = await Estoque.findAll();
+        res.send(itens);
+    } catch (erro) {
+        res.status(500).send(erro.toString());
+    }
+};
+
+exports.buscarItemPorId = async (req, res) => {
+    try {
+        const item = await Estoque.findByPk(req.params.id);
+        if (item) {
+            res.send(item);
+        } else {
+            res.status(404).send({ mensagem: "Item não encontrado." });
+        }
+    } catch (erro) {
+        res.status(500).send(erro.toString());
+    }
+};
+
+exports.atualizarItem = async (req, res) => {
+    try {
+        const atualizado = await Estoque.update(req.body, {
+            where: { id: req.params.id }
+        });
+        if (atualizado[0] === 1) {
+            res.send({ mensagem: "Item atualizado com sucesso." });
+        } else {
+            res.status(404).send({ mensagem: "Item não encontrado ou dados inválidos para atualização." });
+        }
+    } catch (erro) {
+        res.status(500).send(erro.toString());
+    }
+};
+
+exports.excluirItem = async (req, res) => {
+    try {
+        const deletado = await Estoque.destroy({
+            where: { id: req.params.id }
+        });
+        if (deletado === 1) {
+            res.send({ mensagem: "Item excluído com sucesso." });
+        } else {
+            res.status(404).send({ mensagem: "Item não encontrado." });
+        }
+    } catch (erro) {
+        res.status(500).send(erro.toString());
+    }
+};
+
+================
+File: clinica-backend/src/controllers/financeiroController.js
+================
+const Financeiro = require('../models/Financeiro');
+
+exports.adicionarTransacao = async (req, res) => {
+    try {
+        const novaTransacao = await Financeiro.criarComTransacao({
+            tipo_transacao: req.body.tipo_transacao,
+            valor: req.body.valor,
+            data: req.body.data,
+            usuario_id: req.body.usuario_id
+        });
+        res.status(201).send(novaTransacao);
+    } catch (erro) {
+        res.status(500).send(erro);
+    }
+};
+
+exports.listarTodasTransacoes = async (req, res) => {
+    try {
+        const transacoes = await Financeiro.findAll();
+        res.send(transacoes);
+    } catch (erro) {
+        res.status(500).send(erro);
+    }
+};
+
+exports.buscarTransacaoPorId = async (req, res) => {
+    try {
+        const transacao = await Financeiro.findByPk(req.params.id);
+        if (transacao) {
+            res.send(transacao);
+        } else {
+            res.status(404).send({ mensagem: "Transação não encontrada." });
+        }
+    } catch (erro) {
+        res.status(500).send(erro);
+    }
+};
+
+exports.atualizarTransacao = async (req, res) => {
+    try {
+        const atualizado = await Financeiro.update(req.body, {
+            where: { id: req.params.id }
+        });
+        if (atualizado[0] === 1) {
+            res.send({ mensagem: "Transação atualizada com sucesso." });
+        } else {
+            res.status(404).send({ mensagem: "Transação não encontrada ou dados inválidos para atualização." });
+        }
+    } catch (erro) {
+        res.status(500).send(erro);
+    }
+};
+
+exports.excluirTransacao = async (req, res) => {
+    try {
+        const deletado = await Financeiro.destroy({
+            where: { id: req.params.id }
+        });
+        if (deletado === 1) {
+            res.send({ mensagem: "Transação excluída com sucesso." });
+        } else {
+            res.status(404).send({ mensagem: "Transação não encontrada." });
+        }
+    } catch (erro) {
+        res.status(500).send(erro);
+    }
+};
+
+================
+File: clinica-backend/src/controllers/usuarioController.js
+================
+const Usuario = require('../models/Usuario');
+
+// cria um novo usuário usando o método com transação
+exports.criarUsuario = async (req, res) => {
+    try {
+        const novoUsuario = await Usuario.criarComTransacao({
+            nome: req.body.nome,
+            tipo: req.body.tipo
+        });
+        res.status(201).send(novoUsuario);
+    } catch (erro) {
+        res.status(500).send({ mensagem: "Erro ao criar usuário", erro });
+    }
+};
+
+
+// lista todos os usuários
+exports.listarTodosUsuarios = async (req, res) => {
+    try {
+        const usuarios = await Usuario.findAll();
+        res.send(usuarios);
+    } catch (erro) {
+        res.status(500).send(erro);
+    }
+};
+
+// buscando um usuário por ID
+exports.buscarUsuarioPorId = async (req, res) => {
+    try {
+        const usuario = await Usuario.findByPk(req.params.id);
+        if (usuario) {
+            res.send(usuario);
+        } else {
+            res.status(404).send({ mensagem: "Usuário não encontrado." });
+        }
+    } catch (erro) {
+        res.status(500).send(erro);
+    }
+};
+
+// atualiza um usuário
+exports.atualizarUsuario = async (req, res) => {
+    try {
+        const atualizado = await Usuario.update(req.body, {
+            where: { id: req.params.id }
+        });
+        if (atualizado[0] === 1) {
+            res.send({ mensagem: "Usuário atualizado com sucesso." });
+        } else {
+            res.status(404).send({ mensagem: "Usuário não encontrado ou dados inválidos para atualização." });
+        }
+    } catch (erro) {
+        res.status(500).send(erro);
+    }
+};
+
+// excluindo
+exports.excluirUsuario = async (req, res) => {
+    try {
+        const deletado = await Usuario.destroy({
+            where: { id: req.params.id }
+        });
+        if (deletado === 1) {
+            res.send({ mensagem: "Usuário excluído com sucesso." });
+        } else {
+            res.status(404).send({ mensagem: "Usuário não encontrado." });
+        }
+    } catch (erro) {
+        res.status(500).send(erro);
+    }
+};
+
+================
+File: clinica-backend/src/models/Agendamento.js
+================
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/sequelize');
+
+const Agendamento = sequelize.define('Agendamento', {
+    usuario_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    data_hora: {
+        type: DataTypes.DATE,
+        allowNull: false
+    },
+    data_hora_fim: {
+        type: DataTypes.DATE,
+        allowNull: false
+    },
+    servico: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    status: {
+        type: DataTypes.STRING,
+        allowNull: false
+    }
+}, {
+    tableName: 'Agendamento',
+    timestamps: false
+});
+
+// Método para criar agendamento com transação
+Agendamento.criarComTransacao = async function(dadosAgendamento) {
+    const t = await sequelize.transaction();
+    try {
+        const agendamento = await this.create(dadosAgendamento, { transaction: t });
+        await t.commit();
+        return agendamento;
+    } catch (error) {
+        await t.rollback();
+        throw error; // Lançar o erro para ser capturado pelo controlador
+    }
+};
+
+module.exports = Agendamento;
+
+================
+File: clinica-backend/src/models/Estoque.js
+================
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/sequelize'); // Ajuste o caminho conforme a localização do seu arquivo de configuração do Sequelize
+
+const Estoque = sequelize.define('Estoque', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    produto: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: { msg: "O nome do produto não pode estar vazio." }
+        }
+    },
+    quantidade: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: {
+            isInt: { msg: "A quantidade deve ser um número inteiro." },
+            min: 0
+        }
+    }
+}, {
+    tableName: 'Estoque',
+    timestamps: false
+});
+
+
+// Método para criar estoque com transação
+Estoque.criarComTransacao = async function(dadosEstoque) {
+    const t = await sequelize.transaction();
+    try {
+        const estoque = await this.create(dadosEstoque, { transaction: t });
+        await t.commit();
+        return estoque;
+    } catch (error) {
+        await t.rollback();
+        throw error; // Lançar o erro para ser capturado pelo controlador
+    }
+};
+
+module.exports = Estoque;
+
+================
+File: clinica-backend/src/models/Financeiro.js
+================
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/sequelize');
+
+const Financeiro = sequelize.define('Financeiro', {
+    tipo_transacao: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    valor: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false
+    },
+    data: {
+        type: DataTypes.DATE,
+        allowNull: false
+    },
+    usuario_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'Usuario',
+            key: 'id'
+        }
+    }
+}, {
+    tableName: 'Financeiro',
+    timestamps: false
+});
+
+// Método para criar financeiro com transação
+Financeiro.criarComTransacao = async function(dadosFinanceiro) {
+    const t = await sequelize.transaction();
+    try {
+        const financeiro = await this.create(dadosFinanceiro, { transaction: t });
+        await t.commit();
+        return financeiro;
+    } catch (error) {
+        await t.rollback();
+        throw error; // Lançar o erro para ser capturado pelo controlador
+    }
+};
+
+module.exports = Financeiro;
+
+================
+File: clinica-backend/src/models/Usuario.js
+================
+const sequelize = require('../config/sequelize');
+const { DataTypes} = require('sequelize');
+
+const Usuario = sequelize.define('Usuario', {
+    nome: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    tipo: {
+        type: DataTypes.STRING,
+        allowNull: false
+    }
+}, {
+    tableName: 'Usuario',
+    timestamps: false
+});
+
+// Adicionando um método estático para criar usuário com transação
+Usuario.criarComTransacao = async function(dados) {
+    const t = await sequelize.transaction();
+    try {
+        const usuario = await this.create(dados, { transaction: t });
+        await t.commit();
+        return usuario;
+    } catch (error) {
+        await t.rollback();
+        throw error; // Lançar o erro para ser capturado pelo controlador
+    }
+};
+
+module.exports = Usuario;
+
+================
+File: clinica-backend/src/routes/agendamentoRoutes.js
+================
+const express = require('express');
+const router = express.Router();
+const agendamentoController = require('../controllers/agendamentoController');
+
+// Rota para criar um novo agendamento.
+router.post('/', agendamentoController.criarAgendamento);
+
+// Rota para listar todos os agendamentos.
+router.get('/', agendamentoController.listarTodosAgendamentos);
+
+// Rota para buscar um agendamento por ID.
+router.get('/:id', agendamentoController.buscarAgendamentoPorId);
+
+// Rota para atualizar um agendamento por ID.
+router.put('/:id', agendamentoController.atualizarAgendamento);
+
+// Rota para excluir um agendamento por ID.
+router.delete('/:id', agendamentoController.excluirAgendamento);
+
+module.exports = router;
+
+================
+File: clinica-backend/src/routes/estoqueRoutes.js
+================
+const express = require('express');
+const router = express.Router();
+const estoqueController = require('../controllers/estoqueController');
+
+router.post('/', estoqueController.adicionarItem);
+router.get('/', estoqueController.listarTodosItens);
+router.get('/:id', estoqueController.buscarItemPorId);
+router.put('/:id', estoqueController.atualizarItem);
+router.delete('/:id', estoqueController.excluirItem);
+
+module.exports = router;
+
+================
+File: clinica-backend/src/routes/financeiroRoutes.js
+================
+const express = require('express');
+const router = express.Router();
+const financeiroController = require('../controllers/financeiroController');
+
+router.post('/', financeiroController.adicionarTransacao);
+router.get('/', financeiroController.listarTodasTransacoes);
+router.get('/:id', financeiroController.buscarTransacaoPorId);
+router.put('/:id', financeiroController.atualizarTransacao);
+router.delete('/:id', financeiroController.excluirTransacao);
+
+module.exports = router;
+
+================
+File: clinica-backend/src/routes/usuarioRoutes.js
+================
+const express = require('express');
+const router = express.Router();
+const usuarioController = require('../controllers/usuarioController');
+
+router.post('/', usuarioController.criarUsuario);
+router.get('/', usuarioController.listarTodosUsuarios);
+router.get('/:id', usuarioController.buscarUsuarioPorId);
+router.put('/:id', usuarioController.atualizarUsuario);
+router.delete('/:id', usuarioController.excluirUsuario);
+
+module.exports = router;
+
+================
+File: clinica-front/.gitignore
+================
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+================
+File: clinica-front/postcss.config.js
+================
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  }
+}
+
+================
+File: clinica-front/public/index.html
+================
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <title>Instituto Briut</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+  </body>
+</html>
+
+================
+File: clinica-front/public/manifest.json
+================
+{
+  "short_name": "React App",
+  "name": "Create React App Sample",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
+
+================
+File: clinica-front/public/robots.txt
+================
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Disallow:
+
+================
+File: clinica-front/README.md
+================
+# Getting Started with Create React App
+
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+
+## Available Scripts
+
+In the project directory, you can run:
+
+### `npm start`
+
+Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+
+The page will reload when you make changes.\
+You may also see any lint errors in the console.
+
+### `npm test`
+
+Launches the test runner in the interactive watch mode.\
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+
+### `npm run build`
+
+Builds the app for production to the `build` folder.\
+It correctly bundles React in production mode and optimizes the build for the best performance.
+
+The build is minified and the filenames include the hashes.\
+Your app is ready to be deployed!
+
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+### `npm run eject`
+
+**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+
+If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+
+You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+
+## Learn More
+
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+
+To learn React, check out the [React documentation](https://reactjs.org/).
+
+### Code Splitting
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+
+### Analyzing the Bundle Size
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+
+### Making a Progressive Web App
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+
+### Advanced Configuration
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+
+### Deployment
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+
+### `npm run build` fails to minify
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+================
+File: clinica-front/src/App.js
+================
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Home from './components/Home';
+import Usuarios from './components/Usuarios';
+import UsuarioForm from './components/UsuarioForm';
+import Calendario from './components/Calendario';
+import Estoque from './components/Estoque';
+import Financeiro from './components/Financeiro';
+import FinanceiroForm from './components/FinanceiroForm';
+import NotFound from './components/NotFound';  // Um componente para tratar rotas não encontradas
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './index.css';
+
+function App() {
+  return (
+    <Router>
+      <div>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/usuarios" element={<Usuarios />} />
+          <Route path="/usuarios/novo" element={<UsuarioForm />} />
+          <Route path="/usuarios/editar/:id" element={<UsuarioForm />} />
+          <Route path="/agendamentos" element={<Calendario />} />
+          <Route path="/estoque" element={<Estoque />} />
+          <Route path="/financeiro" element={<Financeiro />} />
+          <Route path="/financeiro/novo" element={<FinanceiroForm />} />
+          <Route path="/notfound" element={<NotFound />} />
+          <Route path="*" element={<div>Página Não Encontrada</div>} />
+        </Routes>
+      </div>
+    </Router>
+  );
+}
+
+export default App;
+
+================
+File: clinica-front/src/App.test.js
+================
+import { render, screen } from '@testing-library/react';
+import App from './App';
+
+test('renders learn react link', () => {
+  render(<App />);
+  const linkElement = screen.getByText(/learn react/i);
+  expect(linkElement).toBeInTheDocument();
+});
+
+================
+File: clinica-front/src/components/Agendamentos.js
+================
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import NavBar from './NavBar';
+
+
+function Agendamentos() {
+    const [agendamentos, setAgendamentos] = useState([]);
+
+    useEffect(() => {
+        axios.get('http://localhost:3000/agendamentos')
+            .then(response => {
+                setAgendamentos(response.data);
+            })
+            .catch(error => {
+                console.error('Erro ao buscar agendamentos:', error);
+            });
+    }, []);
+
+    return (
+        <div className='flex'>
+            <NavBar />
+            <div className="flex-1 p-10">
+                <h1>Agendamentos</h1>
+                <ul>
+                    {agendamentos.map(agendamento => (
+                        <li key={agendamento.id}>
+                            {agendamento.data_hora} - {agendamento.servico} - {agendamento.status}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </div>
+    );
+}
+
+export default Agendamentos;
+
+================
+File: clinica-front/src/components/Calendario.js
+================
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import NavBar from './NavBar';
+import { Calendar } from 'primereact/calendar';
+import 'primeflex/primeflex.css';
+import 'primereact/resources/themes/saga-blue/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
+
+function Calendario() {
+    const [events, setEvents] = useState([]);
+
+    useEffect(() => {
+        fetchEvents();
+    }, []);
+
+    const fetchEvents = async () => {
+        try {
+            const response = await axios.get('http://localhost:3000/agendamentos');
+            const formattedEvents = response.data.map(e => ({
+                ...e,
+                start: new Date(e.data_hora),
+                end: new Date(e.data_hora_fim || e.data_hora),
+                title: e.servico
+            }));
+            setEvents(formattedEvents);
+        } catch (error) {
+            console.error('Erro ao buscar eventos:', error);
+        }
+    };
+
+    const handleDateSelect = (e) => {
+        // Formatar a data e hora para garantir que está no fuso horário local correto
+        const isoStart = new Date(e.value).toLocaleString('sv-SE', { timeZone: 'America/Sao_Paulo' }).replace(' ', 'T');
+        const isoEnd = new Date(e.value).toLocaleString('sv-SE', { timeZone: 'America/Sao_Paulo' }).replace(' ', 'T');
+        const inputs = `
+            <input type="text" id="titulo" class="swal2-input" value="" placeholder="Título">
+            <input type="datetime-local" id="dataInicio" class="swal2-input" value="${isoStart}">
+            <input type="datetime-local" id="dataFim" class="swal2-input" value="${isoEnd}">
+            <input type="number" id="usuarioId" class="swal2-input" placeholder="Usuário ID">
+            <input type="text" id="servico" class="swal2-input" placeholder="Serviço">
+            <select id="status" class="swal2-input">
+                <option value="agendado">Agendado</option>
+                <option value="concluido">Concluído</option>
+                <option value="cancelado">Cancelado</option>
+            </select>
+        `;
+    
+        Swal.fire({
+            title: 'Adicionar Novo Evento',
+            html: inputs,
+            confirmButtonText: 'Salvar',
+            focusConfirm: false,
+            preConfirm: () => {
+                const event = {
+                    titulo: document.getElementById('titulo').value,
+                    data_hora: document.getElementById('dataInicio').value,
+                    data_hora_fim: document.getElementById('dataFim').value,
+                    usuario_id: document.getElementById('usuarioId').value,
+                    servico: document.getElementById('servico').value,
+                    status: document.getElementById('status').value
+                };
+                return event;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                axios.post('http://localhost:3000/agendamentos', result.value)
+                    .then(() => {
+                        fetchEvents();
+                        Swal.fire('Adicionado!', 'Seu evento foi adicionado.', 'success');
+                    })
+                    .catch(error => {
+                        console.error('Erro ao adicionar evento:', error);
+                        Swal.fire('Erro!', 'Houve um erro ao adicionar o evento.', 'error');
+                    });
+            }
+        });
+    };
+
+    return (
+        <div className="flex">
+            <NavBar />
+            <div className='flex-1 p-10'>
+                <Calendar inline selectOtherMonths={true} onSelect={handleDateSelect} />
+            </div>
+        </div>
+    );
+}
+
+export default Calendario;
+
+================
+File: clinica-front/src/components/CalendarioForm.js
+================
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
+
+function CalendarioForm({ event, onEventAdded }) {
+    const [titulo, setTitulo] = useState(event.title || '');
+    const [dataInicio, setDataInicio] = useState(event.start || '');
+    const [dataFim, setDataFim] = useState(event.end || '');
+    const [usuarioId, setUsuarioId] = useState(event.usuario_id || '');
+    const [servico, setServico] = useState(event.servico || '');
+    const [status, setStatus] = useState(event.status || 'agendado');
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (event.id) {
+            // Load existing event details if editing
+            axios.get(`http://localhost:3000/agendamentos/${event.id}`)
+                .then(response => {
+                    const { titulo, start, end, usuario_id, servico, status } = response.data;
+                    setTitulo(titulo);
+                    setDataInicio(start);
+                    setDataFim(end);
+                    setUsuarioId(usuario_id);
+                    setServico(servico);
+                    setStatus(status);
+                })
+                .catch(error => console.error('Erro ao buscar detalhes do evento:', error));
+        }
+    }, [event]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const newEvent = {
+            titulo,
+            data_hora: dataInicio,
+            data_hora_fim: dataFim,
+            usuario_id: usuarioId,
+            servico,
+            status
+        };
+
+        try {
+            const url = event.id ? `http://localhost:3000/agendamentos/${event.id}` : 'http://localhost:3000/agendamentos';
+            const method = event.id ? 'put' : 'post';
+
+            const response = await axios({ method, url, data: newEvent });
+            if (response.status === 200 || response.status === 201) {
+                onEventAdded(newEvent);
+                navigate('/agendamentos');
+            } else {
+                throw new Error('Resposta não esperada do servidor');
+            }
+        } catch (error) {
+            Swal.fire('Erro!', 'Houve um problema ao adicionar/atualizar o evento.', 'error');
+            console.error('Erro ao adicionar/atualizar evento:', error);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+                <label htmlFor="titulo">Título:</label>
+                <input
+                    type="text"
+                    id="titulo"
+                    value={titulo}
+                    onChange={e => setTitulo(e.target.value)}
+                    required
+                />
+            </div>
+            <div>
+                <label htmlFor="dataInicio">Data de Início:</label>
+                <input
+                    type="datetime-local"
+                    id="dataInicio"
+                    value={dataInicio}
+                    onChange={e => setDataInicio(e.target.value)}
+                    required
+                />
+            </div>
+            <div>
+                <label htmlFor="dataFim">Data de Fim:</label>
+                <input
+                    type="datetime-local"
+                    id="dataFim"
+                    value={dataFim}
+                    onChange={e => setDataFim(e.target.value)}
+                    required
+                />
+            </div>
+            <div>
+                <label htmlFor="usuarioId">ID do Usuário:</label>
+                <input
+                    type="number"
+                    id="usuarioId"
+                    value={usuarioId}
+                    onChange={e => setUsuarioId(e.target.value)}
+                    required
+                />
+            </div>
+            <div>
+                <label htmlFor="servico">Serviço:</label>
+                <input
+                    type="text"
+                    id="servico"
+                    value={servico}
+                    onChange={e => setServico(e.target.value)}
+                    required
+                />
+            </div>
+            <div>
+                <label htmlFor="status">Status:</label>
+                <select
+                    id="status"
+                    value={status}
+                    onChange={e => setStatus(e.target.value)}
+                    required
+                >
+                    <option value="agendado">Agendado</option>
+                    <option value="concluido">Concluído</option>
+                    <option value="cancelado">Cancelado</option>
+                </select>
+            </div>
+            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Salvar</button>
+        </form>
+    );
+}
+
+export default CalendarioForm;
+
+================
+File: clinica-front/src/components/Estoque.js
+================
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import EstoqueForm from './EstoqueForm'; // Componente do formulário que será criado
+import NavBar from './NavBar';
+import Swal from 'sweetalert2';
+
+function Estoque() {
+    const [estoque, setEstoque] = useState([]);
+    const [itemEditando, setItemEditando] = useState(null);
+
+    useEffect(() => {
+        fetchEstoque();
+    }, []);
+
+    const fetchEstoque = () => {
+        axios.get('http://localhost:3000/estoque')
+            .then(response => {
+                setEstoque(response.data);
+            })
+            .catch(error => {
+                console.error('Erro ao buscar itens do estoque:', error);
+                Swal.fire('Erro', 'Falha ao buscar dados do estoque', 'error');
+            });
+    };
+
+    const handleEdit = item => {
+        setItemEditando(item);
+    };
+
+    const handleAddNew = () => {
+        setItemEditando({ produto: '', quantidade: '' }); // Para novo item
+    };
+
+    const resetForm = () => {
+        setItemEditando(null);
+        fetchEstoque();
+    };
+
+    const handleDelete = id => {
+        Swal.fire({
+            title: 'Tem certeza?',
+            text: "Você não poderá reverter isso!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sim, delete isso!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                axios.delete(`http://localhost:3000/estoque/${id}`)
+                    .then(() => {
+                        fetchEstoque();
+                        Swal.fire('Deletado!', 'O item foi removido.', 'success');
+                    })
+                    .catch(error => {
+                        console.error('Erro ao deletar item do estoque', error);
+                        Swal.fire('Erro', 'Não foi possível deletar o item', 'error');
+                    });
+            }
+        });
+    };
+
+    return (
+        <div className="flex">
+            <NavBar />
+            <div className="flex-1 p-10">
+                <h1>Estoque</h1>
+                {itemEditando ? (
+                    <EstoqueForm item={itemEditando} onFormSubmit={resetForm} />
+                ) : (
+                    <>
+                        <button onClick={handleAddNew} className="mb-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                            Adicionar Item
+                        </button>
+                        <ul className="space-y-4">
+                            {estoque.map(item => (
+                                <li key={item.id} className="bg-white p-3 shadow rounded-lg flex justify-between items-center">
+                                    Produto: {item.produto}, Quantidade: {item.quantidade}
+                                    <div>
+                                        <button onClick={() => handleEdit(item)} className="ml-4 bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">
+                                            Editar
+                                        </button>
+                                        <button onClick={() => handleDelete(item.id)} className="ml-2 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
+                                            Deletar
+                                        </button>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+}
+
+export default Estoque;
+
+================
+File: clinica-front/src/components/EstoqueForm.js
+================
+import React, { useState } from 'react';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+
+function EstoqueForm({ item, onFormSubmit }) {
+    const [produto, setProduto] = useState(item.produto || '');
+    const [quantidade, setQuantidade] = useState(item.quantidade || '');
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        try {
+            const itemData = { produto, quantidade };
+            if (item.id) {
+                await axios.put(`http://localhost:3000/estoque/${item.id}`, itemData);
+            } else {
+                await axios.post('http://localhost:3000/estoque', itemData);
+            }
+            onFormSubmit();
+            Swal.fire('Sucesso!', 'Item atualizado no estoque.', 'success');
+        } catch (error) {
+            console.error('Erro ao salvar o item', error);
+            Swal.fire('Erro!', 'Erro ao salvar o item. Por favor, tente novamente.', 'error');
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-4">
+            <div>
+                <label htmlFor="produto" className="block text-sm font-medium text-gray-700">Produto:</label>
+                <input
+                    type="text"
+                    id="produto"
+                    value={produto}
+                    onChange={e => setProduto(e.target.value)}
+                    required
+                    className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+            </div>
+            <div>
+                <label htmlFor="quantidade" className="block text-sm font-medium text-gray-700">Quantidade:</label>
+                <input
+                    type="number"
+                    id="quantidade"
+                    value={quantidade}
+                    onChange={e => setQuantidade(parseInt(e.target.value))}
+                    required
+                    className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+            </div>
+            <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Salvar
+            </button>
+        </form>
+    );
+}
+
+export default EstoqueForm;
+
+================
+File: clinica-front/src/components/Financeiro.js
+================
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import NavBar from './NavBar';
+import { Link } from 'react-router-dom';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+
+// Registro de componentes do Chart.js
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+function Financeiro() {
+    const [transacoes, setTransacoes] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        axios.get('http://localhost:3000/financeiro')
+            .then(response => {
+                setTransacoes(response.data);
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error('Erro ao buscar transações:', error);
+                setError('Falha ao buscar dados financeiros');
+                setLoading(false);
+            });
+    }, []);
+
+    const chartData = {
+        labels: transacoes.map(t => new Date(t.data).toLocaleDateString('pt-BR')),
+        datasets: [
+            {
+                label: 'Valor das Transações',
+                data: transacoes.map(t => t.valor),
+                backgroundColor: transacoes.map(t => t.tipo_transacao === 'Receita' ? 'rgba(75, 192, 192, 0.2)' : 'rgba(255, 99, 132, 0.2)'),
+                borderColor: transacoes.map(t => t.tipo_transacao === 'Receita' ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'),
+                borderWidth: 1
+            }
+        ]
+    };
+
+    const chartOptions = {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        },
+        maintainAspectRatio: false
+    };
+
+    if (loading) {
+        return <div>Carregando dados financeiros...</div>;
+    }
+
+    if (error) {
+        return <div>{error}</div>;
+    }
+
+    return (
+        <div className="flex">
+            <NavBar />
+            <div className="flex-1 p-10">
+                <h1>Financeiro</h1>
+                <Link to="/financeiro/novo" className="btn btn-primary mb-4">Adicionar Nova Transação</Link>
+                <div style={{ height: '400px', width: '100%' }}>
+                    <Bar data={chartData} options={chartOptions} />
+                </div>
+                {transacoes.length ? (
+                    <ul>
+                        {transacoes.map(transacao => (
+                            <li key={transacao.id}>
+                                Transação ID: {transacao.id}, Tipo: {transacao.tipo_transacao}, Valor: R$ {transacao.valor}, Data: {new Date(transacao.data).toLocaleDateString('pt-BR')}, Usuário ID: {transacao.usuario_id}
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <div>Não há transações registradas.</div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+export default Financeiro;
+
+================
+File: clinica-front/src/components/FinanceiroForm.js
+================
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import NavBar from './NavBar';
+import Swal from 'sweetalert2';
+
+function FinanceiroForm() {
+    const [tipo, setTipo] = useState('');
+    const [valor, setValor] = useState('');
+    const [data, setData] = useState('');
+    const [usuarioId, setUsuarioId] = useState(''); // Estado para o ID do usuário
+    const navigate = useNavigate();
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        try {
+            const novaTransacao = {
+                tipo_transacao: tipo,
+                valor: parseFloat(valor),
+                data,
+                usuario_id: usuarioId  // Adicionando o ID do usuário enviado
+            };
+            const response = await axios.post('http://localhost:3000/financeiro', novaTransacao);
+            if (response.status === 201) {
+                Swal.fire({
+                    title: 'Sucesso!',
+                    text: 'Transação adicionada com sucesso!',
+                    icon: 'success',
+                    confirmButtonText: 'Ok'
+                });
+                navigate('/financeiro');
+            } else {
+                throw new Error('Resposta não esperada do servidor');
+            }
+        } catch (error) {
+            console.error('Erro ao adicionar transação:', error);
+            Swal.fire({
+                title: 'Erro!',
+                text: 'Não foi possível adicionar a transação.',
+                icon: 'error',
+                confirmButtonText: 'Ok'
+            });
+        }
+    };
+
+    return (
+        <div className="flex">
+            <NavBar />
+            <div className="flex-1 p-10">
+                <h1>Adicionar Nova Transação</h1>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label htmlFor="tipo" className="block text-sm font-medium text-gray-700">Tipo:</label>
+                        <select
+                            id="tipo"
+                            value={tipo}
+                            onChange={e => setTipo(e.target.value)}
+                            required
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                            <option value="">Selecione o tipo</option>
+                            <option value="Receita">Receita</option>
+                            <option value="Despesa">Despesa</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="valor" className="block text-sm font-medium text-gray-700">Valor:</label>
+                        <input
+                            type="number"
+                            id="valor"
+                            value={valor}
+                            onChange={e => setValor(e.target.value)}
+                            required
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="data" className="block text-sm font-medium text-gray-700">Data:</label>
+                        <input
+                            type="date"
+                            id="data"
+                            value={data}
+                            onChange={e => setData(e.target.value)}
+                            required
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="usuarioId" className="block text-sm font-medium text-gray-700">ID do Usuário:</label>
+                        <input
+                            type="text"
+                            id="usuarioId"
+                            value={usuarioId}
+                            onChange={e => setUsuarioId(e.target.value)}
+                            required
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                    </div>
+                    <button type="submit" className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Adicionar
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+export default FinanceiroForm;
+
+================
+File: clinica-front/src/components/Home.js
+================
+import * as React from "react";
+
+function InputField({ label, placeholder, type = "text" }) {
+  return (
+    <>
+      <div className="capitalize text-zinc-300">{label}</div>
+      <div
+        className={`justify-center px-4 py-3 mt-3 text-sm rounded-lg border-solid ${
+          type === "password"
+            ? "flex gap-1.5 border border-zinc-700 text-zinc-300"
+            : "border-zinc-700 border-[3px] text-zinc-500 max-md:pr-5"
+        }`}
+      >
+        {type === "password" ? (
+          <>
+            <input
+              type="password"
+              className="flex-1 my-auto bg-transparent outline-none text-zinc-300"
+              placeholder={placeholder}
+              aria-label={placeholder}
+            />
+            <img
+              loading="lazy"
+              src="https://cdn.builder.io/api/v1/image/assets/TEMP/57290b91169eaca85c87358f3873bf7f59e22c4370f0ec99a41bfbb0b0197897?apiKey=5da4ee86ad6041ed939c89b76a4805b2&"
+              alt="Password visibility toggle"
+              className="shrink-0 w-6 aspect-square"
+            />
+          </>
+        ) : (
+          <input
+            type="text"
+            className="bg-transparent outline-none w-full"
+            placeholder={placeholder}
+            aria-label={placeholder}
+          />
+        )}
+      </div>
+    </>
+  );
+}
+
+function LoginForm() {
+  return (
+    <form className="flex relative flex-col justify-center px-20 py-12 mt-48 mb-36 max-w-full rounded-3xl border border-solid shadow-2xl backdrop-blur-[50px] bg-neutral-900 bg-opacity-80 border-zinc-700 border-opacity-50 w-[540px] max-md:px-5 max-md:my-10">
+      <InputField label="Usuário" placeholder="Seu usuário" />
+      <div className="flex gap-0 mt-6 capitalize whitespace-nowrap">
+        <label htmlFor="passwordInput" className="flex-1 text-zinc-300">
+          
+        </label>
+        <div className="text-right text-zinc-400">Esqueceu?</div>
+      </div>
+      <InputField label="Senha" placeholder="Sua senha" type="password" />
+      <button
+        type="submit"
+        className="justify-center items-center p-4 mt-6 font-semibold whitespace-nowrap bg-blue-600 rounded-lg text-zinc-50 max-md:px-5"
+      >
+        Login
+      </button>
+    </form>
+  );
+}
+
+function Home() {
+  return (
+    <div className="flex flex-col justify-center text-base leading-4 bg-neutral-950">
+      <div className="flex overflow-hidden relative flex-col justify-center items-center px-16 py-20 w-full min-h-[1000px] max-md:px-5 max-md:max-w-full">
+        <img
+          loading="lazy"
+          src="https://cdn.builder.io/api/v1/image/assets/TEMP/c84dd549856257b1d7547472d9bd698272a962279303be74a019f7c5cef24d4b?apiKey=5da4ee86ad6041ed939c89b76a4805b2&"
+          alt="Background"
+          className="object-cover absolute inset-0 size-full"
+        />
+        <LoginForm />
+      </div>
+    </div>
+  );
+}
+
+export default Home;
+
+================
+File: clinica-front/src/components/NavBar.js
+================
+import React from "react";
+import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBox, faCalendarAlt, faUsers, faMoneyBillWave, faHandPaper } from '@fortawesome/free-solid-svg-icons';
+import logoClinica from '../assets/images/logo_briut.png'; // Verifique se o caminho está correto
+
+function IconWithText({ icon, text, to }) {
+    return (
+        <Link to={to} className="flex items-center gap-3 pr-5 mt-6 max-w-full text-sm leading-5 whitespace-nowrap text-slate-500 hover:text-slate-700">
+            <FontAwesomeIcon icon={icon} className="w-5 h-5" />
+            <span className="flex-1">{text}</span>
+        </Link>
+    );
+}
+
+function NavBar() {
+    const menuItems = [
+        { icon: faBox, text: "Estoque", to: "/estoque" },
+        { icon: faCalendarAlt, text: "Calendário", to: "/agendamentos" },
+        { icon: faUsers, text: "Usuários", to: "/usuarios" },
+        { icon: faMoneyBillWave, text: "Financeiro", to: "/financeiro" },
+    ];
+
+    return (
+        <div className="flex flex-col justify-between h-screen bg-white rounded-2xl shadow-2xl max-w-[280px]">
+            <div className="p-0">
+                <header className="flex justify-center items-center my-2">
+                    <img src={logoClinica} alt="Logo do Instituto Briut" className="h-16" style={{ width: 'auto' }} />  
+                </header>
+                <nav className="mt-4 w-full">
+                    {menuItems.map((item, index) => (
+                        <IconWithText key={index} icon={item.icon} text={item.text} to={item.to} />
+                    ))}
+                </nav>
+            </div>
+            <div className="p-6">
+                <hr className="mb-4 border-t border-slate-200" />
+                <div className="flex items-center gap-3">
+                    <FontAwesomeIcon icon={faHandPaper} className="w-6 h-6 text-slate-500" />
+                    <div className="flex flex-col">
+                        <span className="text-xs text-slate-500">Bem-Vindo 👋</span>
+                        <span className="text-sm text-slate-900">Gabriel</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default NavBar;
+
+================
+File: clinica-front/src/components/Navigation.js
+================
+import React from 'react';
+import { Navbar, Nav } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+
+function Navigation() {
+  return (
+    <Navbar bg="light" expand="lg">
+      <Navbar.Brand as={Link} to="/">Clinica Médica</Navbar.Brand>
+      <Navbar.Toggle aria-controls="basic-navbar-nav" />
+      <Navbar.Collapse id="basic-navbar-nav">
+        <Nav className="mr-auto">
+          <Nav.Link as={Link} to="/usuarios">Usuários</Nav.Link>
+          <Nav.Link as={Link} to="/agendamentos">Agendamentos</Nav.Link>
+          <Nav.Link as={Link} to="/estoque">Estoque</Nav.Link>
+          <Nav.Link as={Link} to="/financeiro">Financeiro</Nav.Link>
+        </Nav>
+      </Navbar.Collapse>
+    </Navbar>
+  );
+}
+
+export default Navigation;
+
+================
+File: clinica-front/src/components/NotFound.js
+================
+import React from 'react';
+
+function NotFound() {
+  return (
+    <div>
+      <h1>404 - Página Não Encontrada</h1>
+    </div>
+  );
+}
+
+export default NotFound;
+
+================
+File: clinica-front/src/components/UsuarioForm.js
+================
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
+
+function UsuarioForm({ usuario, onFormSubmit }) {
+    const [nome, setNome] = useState(usuario ? usuario.nome : '');
+    const [tipo, setTipo] = useState(usuario ? usuario.tipo : '');
+    const navigate = useNavigate();
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        try {
+            const usuarioData = { nome, tipo };
+            if (usuario && usuario.id) {
+                await axios.put(`http://localhost:3000/usuarios/${usuario.id}`, usuarioData);
+            } else {
+                await axios.post('http://localhost:3000/usuarios', usuarioData);
+            }
+            onFormSubmit();
+            Swal.fire({
+                title: 'Sucesso!',
+                text: 'Usuário salvo com sucesso.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    navigate('/usuarios');
+                }
+            });
+        } catch (error) {
+            Swal.fire({
+                title: 'Erro!',
+                text: 'Erro ao salvar o usuário. Por favor, tente novamente.',
+                icon: 'error',
+                confirmButtonText: 'Fechar'
+            });
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-4">
+            <div>
+                <label htmlFor="nome" className="block text-sm font-medium text-gray-700">Nome:</label>
+                <input
+                    type="text"
+                    id="nome"
+                    value={nome}
+                    onChange={e => setNome(e.target.value)}
+                    required
+                    className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+            </div>
+            <div>
+                <label htmlFor="tipo" className="block text-sm font-medium text-gray-700">Tipo:</label>
+                <select
+                    id="tipo"
+                    value={tipo}
+                    onChange={e => setTipo(e.target.value)}
+                    required
+                    className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                    <option value="">Selecione um tipo</option>
+                    <option value="Administrador">Administrador</option>
+                    <option value="Médico">Médico</option>
+                    <option value="Recepcionista">Recepcionista</option>
+                    <option value="Esteticista">Esteticista</option>
+                    <option value="Psicóloga">Psicologa</option>
+                    <option value="Paciente">Paciente</option>
+                    <option value="Outro">Outro</option>
+                </select>
+            </div>
+            <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Salvar
+            </button>
+        </form>
+    );
+}
+
+export default UsuarioForm;
+
+================
+File: clinica-front/src/components/Usuarios.js
+================
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import UsuarioForm from './UsuarioForm';
+import NavBar from './NavBar';
+import Swal from 'sweetalert2';
+
+function Usuarios() {
+    const [usuarios, setUsuarios] = useState([]);
+    const [usuarioEditando, setUsuarioEditando] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        fetchUsuarios();
+    }, []);
+
+    const fetchUsuarios = () => {
+        axios.get('http://localhost:3000/usuarios')
+            .then(response => {
+                setUsuarios(response.data);
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error('Erro ao buscar usuários:', error);
+                setError('Falha ao buscar dados dos usuários');
+                setLoading(false);
+            });
+    };
+
+    const handleEdit = usuario => {
+        setUsuarioEditando(usuario);
+    };
+
+    const handleAddNew = () => {
+        setUsuarioEditando({ nome: '', tipo: '' });
+    };
+
+    const resetForm = () => {
+        setUsuarioEditando(null);
+        fetchUsuarios();
+    };
+
+    const handleDelete = id => {
+        Swal.fire({
+            title: 'Tem certeza?',
+            text: "Você não poderá reverter isso!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sim, delete isso!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                axios.delete(`http://localhost:3000/usuarios/${id}`)
+                    .then(() => {
+                        fetchUsuarios();
+                        Swal.fire('Deletado!', 'O usuário foi removido.', 'success');
+                    })
+                    .catch(error => {
+                        console.error('Erro ao deletar usuário', error);
+                        Swal.fire('Erro', 'Não foi possível deletar o usuário', 'error');
+                    });
+            }
+        });
+    };
+
+    if (loading) return <div className="flex-1 p-10">Carregando usuários...</div>;
+    if (error) return <div className="flex-1 p-10 text-red-500">{error}</div>;
+
+    return (
+        <div className="flex">
+            <NavBar />
+            <div className="flex-1 p-10">
+                <h1>Usuários</h1>
+                {usuarioEditando ? (
+                    <UsuarioForm usuario={usuarioEditando} onFormSubmit={resetForm} />
+                ) : (
+                    <>
+                        <button onClick={handleAddNew} className="mb-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                            Adicionar Usuário
+                        </button>
+                        <ul className="space-y-4">
+                            {usuarios.map(usuario => (
+                                <li key={usuario.id} className="bg-white p-3 shadow rounded-lg flex justify-between items-center">
+                                    ID: {usuario.id}, Nome: {usuario.nome}, Tipo: {usuario.tipo}
+                                    <div>
+                                        <button onClick={() => handleEdit(usuario)} className="ml-4 bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">
+                                            Editar
+                                        </button>
+                                        <button onClick={() => handleDelete(usuario.id)} className="ml-2 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
+                                            Deletar
+                                        </button>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+}
+
+export default Usuarios;
+
+================
+File: clinica-front/src/components/UsuarioTable.js
+================
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Table, Button } from 'react-bootstrap';
+
+function UsuariosTable() {
+  const [usuarios, setUsuarios] = useState([]);
+
+  useEffect(() => {
+    axios.get('http://localhost:3000/usuarios')
+      .then(response => {
+        setUsuarios(response.data);
+      })
+      .catch(error => {
+        console.error('Erro ao buscar usuários:', error);
+      });
+  }, []);
+
+  return (
+    <Table striped bordered hover>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nome</th>
+          <th>Tipo</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {usuarios.map(usuario => (
+          <tr key={usuario.id}>
+            <td>{usuario.id}</td>
+            <td>{usuario.nome}</td>
+            <td>{usuario.tipo}</td>
+            <td>
+              <Button variant="warning" style={{ marginRight: "10px" }}>Editar</Button>
+              <Button variant="danger">Deletar</Button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  );
+}
+
+export default UsuariosTable;
+
+================
+File: clinica-front/src/index.css
+================
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-1 {
+  flex: 1; /* Isso fará com que o conteúdo ocupe o restante do espaço horizontal */
+}
+
+.p-10 {
+  padding: 10px; /* Ajuste de acordo com sua necessidade */
+}
+
+================
+File: clinica-front/src/index.js
+================
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './App';
+import reportWebVitals from './reportWebVitals';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
+
+================
+File: clinica-front/src/logo.svg
+================
+
+================
+File: clinica-front/src/reportWebVitals.js
+================
+const reportWebVitals = onPerfEntry => {
+  if (onPerfEntry && onPerfEntry instanceof Function) {
+    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+      getCLS(onPerfEntry);
+      getFID(onPerfEntry);
+      getFCP(onPerfEntry);
+      getLCP(onPerfEntry);
+      getTTFB(onPerfEntry);
+    });
+  }
+};
+
+export default reportWebVitals;
+
+================
+File: clinica-front/src/setupTests.js
+================
+// jest-dom adds custom jest matchers for asserting on DOM nodes.
+// allows you to do things like:
+// expect(element).toHaveTextContent(/react/i)
+// learn more: https://github.com/testing-library/jest-dom
+import '@testing-library/jest-dom';
+
+================
+File: clinica-front/tailwind.config.js
+================
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+
+
+================
+File: package.json
+================
+{
+  "dependencies": {
+    "cors": "^2.8.5",
+    "mysql2": "^3.9.7",
+    "sequelize": "^6.37.3"
+  }
+}
+
+================
+File: README.md
+================
+Sistema de Gestão de Clínica Médica
+
+Este repositório contém o código-fonte e a documentação do Sistema de Gestão de Clínica Médica. 
+
+Descrição do Projeto
+
+Desenvolvimento de um sistema abrangente para gerenciar operações de uma Clinica Medica, incluindo agendamento de pacientes, controle de estoque e finanças.
+
+
+
+Requisitos
+
+
+Must Have: Agenda eletrônica, controle de estoque, sistema financeiro.
+
+Should Have: Interface intuitiva, expansão para novas funcionalidades.
+
+Could Have: Módulos adicionais, integração com site institucional.
+
+Won’t Have (initially): Funcionalidades complexas de recursos humanos ou análises preditivas.
+
+
+
+
+Fases de Implementação
+
+
+Configuração do Ambiente de Desenvolvimento
+
+Desenvolvimento Backend (API)
+
+Desenvolvimento Frontend
+
+Integração e Testes
+
+Lançamento e Treinamento
+
+Manutenção e Suporte
+
+
+Milestones
+
+
+Configuração Completa do Ambiente
+
+Conclusão do Backend
+
+Conclusão do Frontend
+
+Integração Completa e Primeiros Testes
+
+Lançamento Oficial do Sistema
+
+Revisão de Um Mês Após Lançamento

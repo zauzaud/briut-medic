@@ -1,31 +1,33 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/sequelize'); // Ajuste o caminho conforme a localização do seu arquivo de configuração do Sequelize
+   const sequelize = require('../config/sequelize');
 
-const Estoque = sequelize.define('Estoque', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
-    produto: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-            notEmpty: { msg: "O nome do produto não pode estar vazio." }
-        }
-    },
-    quantidade: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        validate: {
-            isInt: { msg: "A quantidade deve ser um número inteiro." },
-            min: 0
-        }
-    }
-}, {
-    tableName: 'Estoque',
-    timestamps: false
-});
+   const Estoque = sequelize.define('Estoque', {
+     id: {
+       type: DataTypes.INTEGER,
+       primaryKey: true,
+       autoIncrement: true
+     },
+     nome_item: {
+       type: DataTypes.STRING(100),
+       allowNull: false,
+       field: 'nome_item'
+     },
+     quantidade: {
+       type: DataTypes.INTEGER,
+       allowNull: false
+     },
+     data_validade: {
+       type: DataTypes.DATE,
+       allowNull: true
+     },
+     fornecedor: {
+       type: DataTypes.STRING(100),
+       allowNull: true
+     }
+   }, {
+     tableName: 'Estoque',
+     timestamps: false
+   });
 
 
 // Método para criar estoque com transação

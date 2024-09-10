@@ -1,27 +1,52 @@
 const Agendamento = require('../models/Agendamento');
+const { Op } = require('sequelize');
 
-// cria um novo agendamento usando o método com transação
 exports.criarAgendamento = async (req, res) => {
     try {
-        const novoAgendamento = await Agendamento.criarComTransacao({
-            usuario_id: req.body.usuario_id,
-            data_hora: req.body.data_hora,
-            servico: req.body.servico,
-            status: req.body.status
+        const { usuario_id, data_hora, data_hora_fim, servico, status } = req.body;
+        
+        // Validação dos dados
+        if (!usuario_id || !data_hora || !data_hora_fim || !servico || !status) {
+            return res.status(400).send({ mensagem: "Todos os campos são obrigatórios" });
+        }
+
+        const novoAgendamento = await Agendamento.create({
+            usuario_id,
+            data_hora,
+            data_hora_fim,
+            servico,
+            status
         });
+
         res.status(201).send(novoAgendamento);
     } catch (erro) {
-        res.status(500).send({ mensagem: "Erro ao criar agendamento", erro });
+        console.error('Erro ao criar agendamento:', erro);
+        res.status(500).send({ mensagem: "Erro ao criar agendamento", erro: erro.message });
     }
 };
 
 // recupera todos
 exports.listarTodosAgendamentos = async (req, res) => {
     try {
-        const agendamentos = await Agendamento.findAll();
+        let where = {};
+        if (req.query.date) {
+            const startDate = new Date(req.query.date);
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + 1);
+            
+            where = {
+                data_hora: {
+                    [Op.gte]: startDate,
+                    [Op.lt]: endDate
+                }
+            };
+        }
+        
+        const agendamentos = await Agendamento.findAll({ where });
         res.send(agendamentos);
     } catch (erro) {
-        res.status(500).send(erro);
+        console.error('Erro ao listar agendamentos:', erro);
+        res.status(500).send({ mensagem: "Erro ao listar agendamentos", erro: erro.message });
     }
 };
 

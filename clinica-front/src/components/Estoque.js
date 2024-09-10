@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import EstoqueForm from './EstoqueForm'; // Componente do formulário que será criado
+import EstoqueForm from './EstoqueForm';
 import NavBar from './NavBar';
 import Swal from 'sweetalert2';
 
@@ -28,7 +28,7 @@ function Estoque() {
     };
 
     const handleAddNew = () => {
-        setItemEditando({ produto: '', quantidade: '' }); // Para novo item
+        setItemEditando({ nome_item: '', quantidade: '', data_validade: '', fornecedor: '' });
     };
 
     const resetForm = () => {
@@ -75,7 +75,12 @@ function Estoque() {
                         <ul className="space-y-4">
                             {estoque.map(item => (
                                 <li key={item.id} className="bg-white p-3 shadow rounded-lg flex justify-between items-center">
-                                    Produto: {item.produto}, Quantidade: {item.quantidade}
+                                    <div>
+                                        <p>Nome: {item.nome_item}</p>
+                                        <p>Quantidade: {item.quantidade}</p>
+                                        <p>Validade: {item.data_validade ? new Date(item.data_validade).toLocaleDateString() : 'N/A'}</p>
+                                        <p>Fornecedor: {item.fornecedor || 'N/A'}</p>
+                                    </div>
                                     <div>
                                         <button onClick={() => handleEdit(item)} className="ml-4 bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">
                                             Editar

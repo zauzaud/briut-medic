@@ -29,3 +29,51 @@ code {
 .p-10 {
   padding: 10px; /* Ajuste de acordo com sua necessidade */
 }
+
+.custom-calendar {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.custom-calendar .p-datepicker {
+  width: 100%;
+  min-width: 600px;
+}
+
+.custom-calendar .p-datepicker table {
+  font-size: 1.2em;
+}
+
+.custom-calendar .p-datepicker td {
+  padding: 0.5em;
+}
+
+.custom-calendar .p-datepicker table td {
+  padding: 0.5em;
+}
+
+.custom-calendar .p-datepicker table th {
+  padding: 0.5em;
+}
+
+.custom-calendar .p-datepicker:not(.p-datepicker-inline) {
+  border: none;
+  box-shadow: 0 2px 4px -1px rgba(0,0,0,0.2), 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12);
+}
+
+.custom-calendar .p-datepicker .p-datepicker-header {
+  padding: 0.5em;
+  background: #f8f9fa;
+  color: #495057;
+}
+
+.custom-calendar .p-datepicker .p-datepicker-header .p-datepicker-title {
+  margin: 0 2.5em;
+}
+
+.custom-calendar .p-datepicker .p-datepicker-header .p-datepicker-prev,
+.custom-calendar .p-datepicker .p-datepicker-header .p-datepicker-next {
+  width: 2em;
+  height: 2em;
+}

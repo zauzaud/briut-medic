@@ -2,22 +2,26 @@ const Estoque = require('../models/Estoque');
 
 exports.adicionarItem = async (req, res) => {
     try {
-        const novoItem = await Estoque.criarComTransacao({
-            produto: req.body.produto,
-            quantidade: req.body.quantidade
-        });
-        res.status(201).send(novoItem);
+      const novoItem = await Estoque.create({
+        nome_item: req.body.nome_item,
+        quantidade: req.body.quantidade,
+        data_validade: req.body.data_validade,
+        fornecedor: req.body.fornecedor
+      });
+      res.status(201).send(novoItem);
     } catch (erro) {
-        res.status(500).send(erro.toString());
+      console.error('Erro ao adicionar item:', erro);
+      res.status(500).send({ mensagem: "Erro ao adicionar item ao estoque", erro: erro.message });
     }
-};
+  };
 
-exports.listarTodosItens = async (req, res) => {
+  exports.listarTodosItens = async (req, res) => {
     try {
         const itens = await Estoque.findAll();
         res.send(itens);
     } catch (erro) {
-        res.status(500).send(erro.toString());
+        console.error('Erro ao listar itens do estoque:', erro);
+        res.status(500).send({ mensagem: "Erro ao listar itens do estoque", erro: erro.message });
     }
 };
 
