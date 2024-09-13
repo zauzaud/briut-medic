@@ -1,5 +1,8 @@
+// clinica-backend/src/models/Agendamento.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
+const Paciente = require('./Paciente');
+const Usuario = require('./Usuario');
 
 const Agendamento = sequelize.define('Agendamento', {
     id: {
@@ -7,7 +10,11 @@ const Agendamento = sequelize.define('Agendamento', {
         primaryKey: true,
         autoIncrement: true
     },
-    usuario_id: {
+    paciente_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    medico_id: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
@@ -20,19 +27,24 @@ const Agendamento = sequelize.define('Agendamento', {
         allowNull: false
     },
     servico: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.STRING(255),
         allowNull: false
     },
     status: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.ENUM('agendado', 'confirmado', 'concluido', 'cancelado'),
         allowNull: false
+    },
+    observacoes: {
+        type: DataTypes.TEXT
     }
 }, {
     tableName: 'Agendamento',
     timestamps: false
 });
 
-module.exports = Agendamento;
+Agendamento.belongsTo(Paciente, { foreignKey: 'paciente_id' });
+Agendamento.belongsTo(Usuario, { foreignKey: 'medico_id' });
+
 
 // Método para criar agendamento com transação
 Agendamento.criarComTransacao = async function(dadosAgendamento) {
