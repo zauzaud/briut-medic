@@ -5,6 +5,7 @@ const pacienteRoutes = require('./routes/pacienteRoutes');
 const agendamentoRoutes = require('./routes/agendamentoRoutes');
 const estoqueRoutes = require('./routes/estoqueRoutes');
 const financeiroRoutes = require('./routes/financeiroRoutes');
+const anamneseRoutes = require('./routes/anamneseRoutes');
 
 const app = express();
 
@@ -19,5 +20,6 @@ app.use('/pacientes', pacienteRoutes);
 app.use('/agendamentos', agendamentoRoutes);
 app.use('/estoque', estoqueRoutes);
 app.use('/financeiro', financeiroRoutes);
+app.use('/anamneses', anamneseRoutes);
 
 module.exports = app;

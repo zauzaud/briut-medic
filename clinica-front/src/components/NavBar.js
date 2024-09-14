@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBox, faCalendarAlt, faUsers, faMoneyBillWave, faHandPaper } from '@fortawesome/free-solid-svg-icons';
-import logoClinica from '../assets/images/logo_briut.png'; // Verifique se o caminho está correto
+import { faBox, faCalendarAlt, faUsers, faMoneyBillWave, faHandPaper, faUserInjured, faNotesMedical } from '@fortawesome/free-solid-svg-icons';
+import logoClinica from '../assets/images/logo_briut.png';
 
 function IconWithText({ icon, text, to }) {
     return (
@@ -19,6 +19,8 @@ function NavBar() {
         { icon: faCalendarAlt, text: "Calendário", to: "/agendamentos" },
         { icon: faUsers, text: "Usuários", to: "/usuarios" },
         { icon: faMoneyBillWave, text: "Financeiro", to: "/financeiro" },
+        { icon: faUserInjured, text: "Pacientes", to: "/pacientes" },
+        { icon: faNotesMedical, text: "Anamneses", to: "/anamneses" },
     ];
 
     return (

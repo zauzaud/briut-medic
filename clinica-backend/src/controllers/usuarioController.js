@@ -1,18 +1,48 @@
 const Usuario = require('../models/Usuario');
+const bcrypt = require('bcrypt');
 
-// cria um novo usuário usando o método com transação
+function gerarSenhaAleatoria(tamanho = 8) {
+    const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let resultado = '';
+    for (let i = 0; i < tamanho; i++) {
+        resultado += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+    }
+    return resultado;
+}
+
 exports.criarUsuario = async (req, res) => {
     try {
-        const novoUsuario = await Usuario.criarComTransacao({
-            nome: req.body.nome,
-            tipo: req.body.tipo
+        const { nome, email, tipo } = req.body;
+        
+        // Gera uma senha aleatória
+        const senhaTemporaria = gerarSenhaAleatoria();
+        
+        // Hash da senha temporária
+        const senhaHash = await bcrypt.hash(senhaTemporaria, 10);
+
+        const novoUsuario = await Usuario.create({
+            nome,
+            email,
+            senha: senhaHash,
+            tipo
         });
-        res.status(201).send(novoUsuario);
+
+        // Remove a senha do objeto de resposta
+        const { senha, ...usuarioSemSenha } = novoUsuario.toJSON();
+
+        // Envia a resposta com a senha temporária
+        res.status(201).json({
+            ...usuarioSemSenha,
+            senhaTemporaria: senhaTemporaria // Inclui a senha temporária na resposta
+        });
     } catch (erro) {
-        res.status(500).send({ mensagem: "Erro ao criar usuário", erro });
+        console.error('Erro ao criar usuário:', erro);
+        if (erro.name === 'SequelizeUniqueConstraintError') {
+            return res.status(400).json({ mensagem: "Email já está em uso" });
+        }
+        res.status(500).json({ mensagem: "Erro ao criar usuário", erro: erro.message });
     }
 };
-
 
 // lista todos os usuários
 exports.listarTodosUsuarios = async (req, res) => {

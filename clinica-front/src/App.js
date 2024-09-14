@@ -3,11 +3,15 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './components/Home';
 import Usuarios from './components/Usuarios';
 import UsuarioForm from './components/UsuarioForm';
+import Pacientes from './components/Pacientes';
+import PacienteForm from './components/PacienteForm';
 import Calendario from './components/Calendario';
 import Estoque from './components/Estoque';
 import Financeiro from './components/Financeiro';
 import FinanceiroForm from './components/FinanceiroForm';
-import NotFound from './components/NotFound';  // Um componente para tratar rotas não encontradas
+import Anamnese from './components/Anamnese';
+import ListaAnamneses from './components/ListaAnamneses';
+import NotFound from './components/NotFound';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
 
@@ -17,15 +21,30 @@ function App() {
       <div>
         <Routes>
           <Route path="/" element={<Home />} />
+          
+          {/* Rotas de Usuários */}
           <Route path="/usuarios" element={<Usuarios />} />
           <Route path="/usuarios/novo" element={<UsuarioForm />} />
           <Route path="/usuarios/editar/:id" element={<UsuarioForm />} />
+          
+          {/* Rotas de Pacientes */}
+          <Route path="/pacientes" element={<Pacientes />} />
+          <Route path="/pacientes/novo" element={<PacienteForm />} />
+          <Route path="/pacientes/editar/:id" element={<PacienteForm />} />
+          
+          {/* Rotas de Anamnese */}
+          <Route path="/anamnese/:pacienteId" element={<Anamnese />} />
+          <Route path="/anamneses" element={<ListaAnamneses />} />
+
+          
+          {/* Outras Rotas */}
           <Route path="/agendamentos" element={<Calendario />} />
           <Route path="/estoque" element={<Estoque />} />
           <Route path="/financeiro" element={<Financeiro />} />
           <Route path="/financeiro/novo" element={<FinanceiroForm />} />
-          <Route path="/notfound" element={<NotFound />} />
-          <Route path="*" element={<div>Página Não Encontrada</div>} />
+          
+          {/* Rota de Erro */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     </Router>

@@ -1,9 +1,15 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
+const Paciente = require('./Paciente');
 
 const Financeiro = sequelize.define('Financeiro', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
     tipo_transacao: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM('receita', 'despesa'),
         allowNull: false
     },
     valor: {
@@ -14,30 +20,21 @@ const Financeiro = sequelize.define('Financeiro', {
         type: DataTypes.DATE,
         allowNull: false
     },
-    usuario_id: {
+    paciente_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'Usuario',
-            key: 'id'
-        }
+        allowNull: true
+    },
+    descricao: {
+        type: DataTypes.TEXT
+    },
+    categoria: {
+        type: DataTypes.STRING(100)
     }
 }, {
     tableName: 'Financeiro',
     timestamps: false
 });
 
-// Método para criar financeiro com transação
-Financeiro.criarComTransacao = async function(dadosFinanceiro) {
-    const t = await sequelize.transaction();
-    try {
-        const financeiro = await this.create(dadosFinanceiro, { transaction: t });
-        await t.commit();
-        return financeiro;
-    } catch (error) {
-        await t.rollback();
-        throw error; // Lançar o erro para ser capturado pelo controlador
-    }
-};
+Financeiro.belongsTo(Paciente, { foreignKey: 'paciente_id' });
 
 module.exports = Financeiro;

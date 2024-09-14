@@ -13,7 +13,6 @@ import {
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 
-// Registro de componentes do Chart.js
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -31,7 +30,12 @@ function Financeiro() {
     useEffect(() => {
         axios.get('http://localhost:3000/financeiro')
             .then(response => {
-                setTransacoes(response.data);
+                // Converter o valor para número
+                const transacoesFormatadas = response.data.map(t => ({
+                    ...t,
+                    valor: parseFloat(t.valor)
+                }));
+                setTransacoes(transacoesFormatadas);
                 setLoading(false);
             })
             .catch(error => {
@@ -46,9 +50,9 @@ function Financeiro() {
         datasets: [
             {
                 label: 'Valor das Transações',
-                data: transacoes.map(t => t.valor),
-                backgroundColor: transacoes.map(t => t.tipo_transacao === 'Receita' ? 'rgba(75, 192, 192, 0.2)' : 'rgba(255, 99, 132, 0.2)'),
-                borderColor: transacoes.map(t => t.tipo_transacao === 'Receita' ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'),
+                data: transacoes.map(t => t.tipo_transacao.toLowerCase() === 'despesa' ? -t.valor : t.valor),
+                backgroundColor: transacoes.map(t => t.tipo_transacao.toLowerCase() === 'receita' ? 'rgba(75, 192, 192, 0.2)' : 'rgba(255, 99, 132, 0.2)'),
+                borderColor: transacoes.map(t => t.tipo_transacao.toLowerCase() === 'receita' ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'),
                 borderWidth: 1
             }
         ]
@@ -83,8 +87,12 @@ function Financeiro() {
                 {transacoes.length ? (
                     <ul>
                         {transacoes.map(transacao => (
-                            <li key={transacao.id}>
-                                Transação ID: {transacao.id}, Tipo: {transacao.tipo_transacao}, Valor: R$ {transacao.valor}, Data: {new Date(transacao.data).toLocaleDateString('pt-BR')}, Usuário ID: {transacao.usuario_id}
+                            <li key={transacao.id} style={{color: transacao.tipo_transacao.toLowerCase() === 'receita' ? 'green' : 'red'}}>
+                                Transação ID: {transacao.id}, 
+                                Tipo: {transacao.tipo_transacao}, 
+                                Valor: R$ {transacao.valor.toFixed(2)}, 
+                                Data: {new Date(transacao.data).toLocaleDateString('pt-BR')}, 
+                                Usuário ID: {transacao.usuario_id || 'N/A'}
                             </li>
                         ))}
                     </ul>

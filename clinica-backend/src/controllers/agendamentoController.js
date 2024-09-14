@@ -25,6 +25,7 @@ exports.criarAgendamento = async (req, res) => {
         res.status(500).json({ mensagem: "Erro ao criar agendamento", erro: erro.message });
     }
 };
+
 // recupera todos
 exports.listarTodosAgendamentos = async (req, res) => {
     try {

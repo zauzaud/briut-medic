@@ -1,21 +1,38 @@
+const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
-const { DataTypes} = require('sequelize');
 
 const Usuario = sequelize.define('Usuario', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
     nome: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    email: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        unique: true
+    },
+    senha: {
+        type: DataTypes.STRING(255),
         allowNull: false
     },
     tipo: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM('admin', 'medico', 'recepcionista', 'outro'),
         allowNull: false
+    },
+    data_cadastro: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
     }
 }, {
     tableName: 'Usuario',
     timestamps: false
 });
 
-// Adicionando um método estático para criar usuário com transação
 Usuario.criarComTransacao = async function(dados) {
     const t = await sequelize.transaction();
     try {
@@ -24,7 +41,8 @@ Usuario.criarComTransacao = async function(dados) {
         return usuario;
     } catch (error) {
         await t.rollback();
-        throw error; // Lançar o erro para ser capturado pelo controlador
+        console.error('Erro ao criar usuário:', error);
+        throw error;
     }
 };
 

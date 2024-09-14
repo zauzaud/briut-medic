@@ -2,15 +2,18 @@ const Financeiro = require('../models/Financeiro');
 
 exports.adicionarTransacao = async (req, res) => {
     try {
-        const novaTransacao = await Financeiro.criarComTransacao({
-            tipo_transacao: req.body.tipo_transacao,
-            valor: req.body.valor,
-            data: req.body.data,
-            usuario_id: req.body.usuario_id
+        const { tipo_transacao, valor, data, paciente_id, descricao, categoria } = req.body;
+        const novaTransacao = await Financeiro.create({
+            tipo_transacao,
+            valor,
+            data,
+            paciente_id,
+            descricao,
+            categoria
         });
-        res.status(201).send(novaTransacao);
+        res.status(201).json(novaTransacao);
     } catch (erro) {
-        res.status(500).send(erro);
+        res.status(500).json({ mensagem: "Erro ao adicionar transação", erro: erro.message });
     }
 };
 

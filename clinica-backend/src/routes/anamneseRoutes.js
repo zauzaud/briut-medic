@@ -5,5 +5,6 @@ const anamneseController = require('../controllers/anamneseController');
 router.post('/', anamneseController.criarAnamnese);
 router.get('/paciente/:pacienteId', anamneseController.buscarAnamnesePorPaciente);
 router.put('/:id', anamneseController.atualizarAnamnese);
+router.get('/', anamneseController.listarTodasAnamneses);  
 
 module.exports = router;

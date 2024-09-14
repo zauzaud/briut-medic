@@ -61,19 +61,22 @@ function Calendario() {
             Swal.fire('Erro', 'Por favor, selecione uma data primeiro', 'error');
             return;
         }
-
+    
         Swal.fire({
             title: 'Adicionar Novo Agendamento',
             html: `
-                <input id="usuario_id" class="swal2-input" placeholder="ID do Usuário">
+                <input id="paciente_id" class="swal2-input" placeholder="ID do Paciente">
+                <input id="medico_id" class="swal2-input" placeholder="ID do Médico">
                 <input id="servico" class="swal2-input" placeholder="Serviço">
                 <input id="data_hora" class="swal2-input" type="time">
                 <input id="data_hora_fim" class="swal2-input" type="time">
                 <select id="status" class="swal2-select">
                     <option value="agendado">Agendado</option>
                     <option value="confirmado">Confirmado</option>
+                    <option value="concluido">Concluído</option>
                     <option value="cancelado">Cancelado</option>
                 </select>
+                <textarea id="observacoes" class="swal2-textarea" placeholder="Observações"></textarea>
             `,
             focusConfirm: false,
             preConfirm: () => {
@@ -81,11 +84,13 @@ function Calendario() {
                 const startTime = document.getElementById('data_hora').value;
                 const endTime = document.getElementById('data_hora_fim').value;
                 return {
-                    usuario_id: document.getElementById('usuario_id').value,
+                    paciente_id: document.getElementById('paciente_id').value,
+                    medico_id: document.getElementById('medico_id').value,
                     servico: document.getElementById('servico').value,
                     data_hora: `${date}T${startTime}:00`,
                     data_hora_fim: `${date}T${endTime}:00`,
-                    status: document.getElementById('status').value
+                    status: document.getElementById('status').value,
+                    observacoes: document.getElementById('observacoes').value
                 };
             }
         }).then((result) => {
@@ -102,7 +107,6 @@ function Calendario() {
             }
         });
     };
-
     const handleEditAppointment = (event) => {
         Swal.fire({
             title: 'Editar Agendamento',

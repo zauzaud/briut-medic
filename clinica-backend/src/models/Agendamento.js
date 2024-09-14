@@ -1,4 +1,3 @@
-// clinica-backend/src/models/Agendamento.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 const Paciente = require('./Paciente');
@@ -44,19 +43,5 @@ const Agendamento = sequelize.define('Agendamento', {
 
 Agendamento.belongsTo(Paciente, { foreignKey: 'paciente_id' });
 Agendamento.belongsTo(Usuario, { foreignKey: 'medico_id' });
-
-
-// Método para criar agendamento com transação
-Agendamento.criarComTransacao = async function(dadosAgendamento) {
-    const t = await sequelize.transaction();
-    try {
-        const agendamento = await this.create(dadosAgendamento, { transaction: t });
-        await t.commit();
-        return agendamento;
-    } catch (error) {
-        await t.rollback();
-        throw error; // Lançar o erro para ser capturado pelo controlador
-    }
-};
 
 module.exports = Agendamento;

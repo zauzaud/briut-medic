@@ -36,4 +36,18 @@ exports.atualizarAnamnese = async (req, res) => {
     } catch (erro) {
         res.status(500).json({ mensagem: "Erro ao atualizar anamnese", erro: erro.message });
     }
+
+    
 };
+
+exports.listarTodasAnamneses = async (req, res) => {
+    try {
+        const anamneses = await Anamnese.findAll({
+            include: [{ model: Paciente, attributes: ['nome'] }]
+        });
+        res.json(anamneses);
+    } catch (erro) {
+        res.status(500).json({ mensagem: "Erro ao listar anamneses", erro: erro.message });
+    }
+};
+
