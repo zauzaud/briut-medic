@@ -47,10 +47,14 @@ function PacienteForm() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            const pacienteData = {
+                ...paciente,
+                data_nascimento: paciente.data_nascimento ? new Date(paciente.data_nascimento).toISOString().split('T')[0] : null
+            };
             if (id) {
-                await axios.put(`http://localhost:3000/pacientes/${id}`, paciente);
+                await axios.put(`http://localhost:3000/pacientes/${id}`, pacienteData);
             } else {
-                await axios.post('http://localhost:3000/pacientes', paciente);
+                await axios.post('http://localhost:3000/pacientes', pacienteData);
             }
             Swal.fire('Sucesso', 'Paciente salvo com sucesso', 'success');
             navigate('/pacientes');

@@ -45,12 +45,12 @@ exports.criarUsuario = async (req, res) => {
 };
 
 // lista todos os usuários
-exports.listarTodosUsuarios = async (req, res) => {
+exports.listarUsuarios = async (req, res) => {
     try {
         const usuarios = await Usuario.findAll();
-        res.send(usuarios);
+        res.json(usuarios);
     } catch (erro) {
-        res.status(500).send(erro);
+        res.status(500).json({ mensagem: "Erro ao listar usuários", erro: erro.message });
     }
 };
 
@@ -59,43 +59,43 @@ exports.buscarUsuarioPorId = async (req, res) => {
     try {
         const usuario = await Usuario.findByPk(req.params.id);
         if (usuario) {
-            res.send(usuario);
+            res.json(usuario);
         } else {
-            res.status(404).send({ mensagem: "Usuário não encontrado." });
+            res.status(404).json({ mensagem: "Usuário não encontrado" });
         }
     } catch (erro) {
-        res.status(500).send(erro);
+        res.status(500).json({ mensagem: "Erro ao buscar usuário", erro: erro.message });
     }
 };
 
 // atualiza um usuário
 exports.atualizarUsuario = async (req, res) => {
     try {
-        const atualizado = await Usuario.update(req.body, {
+        const [atualizado] = await Usuario.update(req.body, {
             where: { id: req.params.id }
         });
-        if (atualizado[0] === 1) {
-            res.send({ mensagem: "Usuário atualizado com sucesso." });
+        if (atualizado) {
+            const usuarioAtualizado = await Usuario.findByPk(req.params.id);
+            res.json(usuarioAtualizado);
         } else {
-            res.status(404).send({ mensagem: "Usuário não encontrado ou dados inválidos para atualização." });
+            res.status(404).json({ mensagem: "Usuário não encontrado" });
         }
     } catch (erro) {
-        res.status(500).send(erro);
+        res.status(500).json({ mensagem: "Erro ao atualizar usuário", erro: erro.message });
     }
 };
 
-// excluindo
-exports.excluirUsuario = async (req, res) => {
+exports.deletarUsuario = async (req, res) => {
     try {
         const deletado = await Usuario.destroy({
             where: { id: req.params.id }
         });
-        if (deletado === 1) {
-            res.send({ mensagem: "Usuário excluído com sucesso." });
+        if (deletado) {
+            res.json({ mensagem: "Usuário deletado com sucesso" });
         } else {
-            res.status(404).send({ mensagem: "Usuário não encontrado." });
+            res.status(404).json({ mensagem: "Usuário não encontrado" });
         }
     } catch (erro) {
-        res.status(500).send(erro);
+        res.status(500).json({ mensagem: "Erro ao deletar usuário", erro: erro.message });
     }
 };

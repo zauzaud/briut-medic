@@ -91,8 +91,12 @@ function UsuarioForm({ usuario, onFormSubmit }) {
                 >
                     <option value="">Selecione um tipo</option>
                     <option value="admin">Administrador</option>
+                    <option value="nutricionista">Nutricionista</option>
                     <option value="medico">Médico</option>
+                    <option value="terapeuta">Terapeuta</option>
                     <option value="recepcionista">Recepcionista</option>
+                    <option value="biomedico">Bio Médico</option>
+                    <option value="esteticista">Esteticista</option>
                     <option value="outro">Outro</option>
                 </select>
             </div>

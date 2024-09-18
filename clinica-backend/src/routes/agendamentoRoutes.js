@@ -6,7 +6,7 @@ const agendamentoController = require('../controllers/agendamentoController');
 router.post('/', agendamentoController.criarAgendamento);
 
 // Rota para listar todos os agendamentos.
-router.get('/', agendamentoController.listarTodosAgendamentos);
+router.get('/', agendamentoController.listarAgendamentos);
 
 // Rota para buscar um agendamento por ID.
 router.get('/:id', agendamentoController.buscarAgendamentoPorId);
@@ -15,6 +15,6 @@ router.get('/:id', agendamentoController.buscarAgendamentoPorId);
 router.put('/:id', agendamentoController.atualizarAgendamento);
 
 // Rota para excluir um agendamento por ID.
-router.delete('/:id', agendamentoController.excluirAgendamento);
+router.delete('/:id', agendamentoController.deletarAgendamento);
 
 module.exports = router;

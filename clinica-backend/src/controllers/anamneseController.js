@@ -1,4 +1,6 @@
-const { sequelize, Anamnese, AnamneseRespostas } = require('../models');
+const sequelize = require('../config/sequelize');
+const Anamnese = require('../models/Anamnese');
+const AnamneseRespostas = require('../models/AnamneseRespostas');
 
 exports.criarAnamnese = async (req, res) => {
     const t = await sequelize.transaction();

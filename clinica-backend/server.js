@@ -2,7 +2,7 @@ const app = require('./src/app');  // Importa a configuração do aplicativo Exp
 const port = 3000;                // Define a porta em que o servidor será iniciado
 
 // Importando a conexão do banco de dados
-const connection = require('./src/config/database');
+const connection = require('./src/config/sequelize');
 
 // Teste básico da conexão com o banco de dados
 connection.query('SELECT 1 + 1 AS solution', (error, results) => {

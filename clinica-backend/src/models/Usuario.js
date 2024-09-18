@@ -21,7 +21,7 @@ const Usuario = sequelize.define('Usuario', {
         allowNull: false
     },
     tipo: {
-        type: DataTypes.ENUM('admin', 'medico', 'recepcionista', 'outro'),
+        type: DataTypes.ENUM('Médico', 'Nutricionista', 'Terapeuta', 'Admin', 'Recepcionista', 'Bio Medico', 'Esteticista', 'Outros'),
         allowNull: false
     },
     data_cadastro: {

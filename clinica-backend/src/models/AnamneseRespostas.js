@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
+const Anamnese = require('./Anamnese');
 
 const AnamneseRespostas = sequelize.define('AnamneseRespostas', {
     id: {
@@ -23,8 +24,7 @@ const AnamneseRespostas = sequelize.define('AnamneseRespostas', {
     timestamps: false
 });
 
-AnamneseRespostas.associate = function(models) {
-    AnamneseRespostas.belongsTo(models.Anamnese, { foreignKey: 'anamnese_id', as: 'Anamnese' });
-};
+AnamneseRespostas.belongsTo(Anamnese, { foreignKey: 'anamnese_id' });
+Anamnese.hasMany(AnamneseRespostas, { foreignKey: 'anamnese_id' });
 
 module.exports = AnamneseRespostas;

@@ -1,7 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
-const Paciente = require('./Paciente');
-const Usuario = require('./Usuario');
 
 const Agendamento = sequelize.define('Agendamento', {
     id: {
@@ -13,7 +11,11 @@ const Agendamento = sequelize.define('Agendamento', {
         type: DataTypes.INTEGER,
         allowNull: false
     },
-    medico_id: {
+    profissional_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    servico_id: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
@@ -25,12 +27,8 @@ const Agendamento = sequelize.define('Agendamento', {
         type: DataTypes.DATE,
         allowNull: false
     },
-    servico: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-    },
     status: {
-        type: DataTypes.ENUM('agendado', 'confirmado', 'concluido', 'cancelado'),
+        type: DataTypes.ENUM('Agendado', 'Confirmado', 'Concluido', 'Cancelado'),
         allowNull: false
     },
     observacoes: {
@@ -41,7 +39,10 @@ const Agendamento = sequelize.define('Agendamento', {
     timestamps: false
 });
 
-Agendamento.belongsTo(Paciente, { foreignKey: 'paciente_id' });
-Agendamento.belongsTo(Usuario, { foreignKey: 'medico_id' });
+Agendamento.associate = (models) => {
+    Agendamento.belongsTo(models.Paciente, { foreignKey: 'paciente_id' });
+    Agendamento.belongsTo(models.Usuario, { foreignKey: 'profissional_id' });
+    Agendamento.belongsTo(models.Servico, { foreignKey: 'servico_id' });
+};
 
 module.exports = Agendamento;

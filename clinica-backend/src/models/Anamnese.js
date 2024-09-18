@@ -22,8 +22,6 @@ const Anamnese = sequelize.define('Anamnese', {
     updatedAt: 'ultima_atualizacao'
 });
 
-Anamnese.associate = function(models) {
-    Anamnese.hasMany(models.AnamneseRespostas, { foreignKey: 'anamnese_id', as: 'AnamneseRespostas' });
-};
+
 
 module.exports = Anamnese;

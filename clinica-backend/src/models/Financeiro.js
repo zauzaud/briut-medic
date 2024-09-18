@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
-const Paciente = require('./Paciente');
 
 const Financeiro = sequelize.define('Financeiro', {
     id: {
@@ -9,7 +8,7 @@ const Financeiro = sequelize.define('Financeiro', {
         autoIncrement: true
     },
     tipo_transacao: {
-        type: DataTypes.ENUM('receita', 'despesa'),
+        type: DataTypes.ENUM('Receita', 'Despesa'),
         allowNull: false
     },
     valor: {
@@ -21,8 +20,13 @@ const Financeiro = sequelize.define('Financeiro', {
         allowNull: false
     },
     paciente_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true
+        type: DataTypes.INTEGER
+    },
+    agendamento_id: {
+        type: DataTypes.INTEGER
+    },
+    profissional_id: {
+        type: DataTypes.INTEGER
     },
     descricao: {
         type: DataTypes.TEXT
@@ -35,6 +39,10 @@ const Financeiro = sequelize.define('Financeiro', {
     timestamps: false
 });
 
-Financeiro.belongsTo(Paciente, { foreignKey: 'paciente_id' });
+Financeiro.associate = (models) => {
+    Financeiro.belongsTo(models.Paciente, { foreignKey: 'paciente_id' });
+    Financeiro.belongsTo(models.Agendamento, { foreignKey: 'agendamento_id' });
+    Financeiro.belongsTo(models.Usuario, { foreignKey: 'profissional_id' });
+};
 
 module.exports = Financeiro;

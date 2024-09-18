@@ -35,12 +35,17 @@ const Paciente = sequelize.define('Paciente', {
     },
     cep: {
         type: DataTypes.STRING(10)
+    },
+    informacoes_medicas: {
+        type: DataTypes.TEXT
+    },
+    data_cadastro: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
     }
 }, {
     tableName: 'Paciente',
-    timestamps: true,
-    createdAt: 'data_cadastro',
-    updatedAt: false
+    timestamps: false
 });
 
 module.exports = Paciente;
