@@ -8,7 +8,8 @@ const connection = mysql.createPool({
   database: 'clinicadb', 
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  dialect: 'mysql'
 });
 
 module.exports = connection;

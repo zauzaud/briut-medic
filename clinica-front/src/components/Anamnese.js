@@ -1,54 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import NavBar from './NavBar';
 import Swal from 'sweetalert2';
+import AnamneseForm from './AnamneseForm';
 
 function Anamnese() {
-    const [anamnese, setAnamnese] = useState({
-        historia_clinica: '',
-        medicacoes_atuais: '',
-        alergias: '',
-        habitos_vida: '',
-        antecedentes_familiares: ''
-    });
+    const [anamneses, setAnamneses] = useState([]);
+    const [tipoAnamnese, setTipoAnamnese] = useState('');
     const { pacienteId } = useParams();
+    const navigate = useNavigate();
 
-    useEffect(() => {
-        fetchAnamnese();
-    }, [pacienteId]);
-
-    const fetchAnamnese = async () => {
+    const fetchAnamneses = useCallback(async () => {
         try {
             const response = await axios.get(`http://localhost:3000/anamneses/paciente/${pacienteId}`);
-            setAnamnese(response.data);
+            console.log('Resposta da API:', response.data);
+            setAnamneses(response.data);
         } catch (error) {
-            console.error('Erro ao buscar anamnese:', error);
-            if (error.response && error.response.status === 404) {
-                // Anamnese não encontrada, manter o estado vazio
-            } else {
-                Swal.fire('Erro', 'Falha ao buscar dados da anamnese', 'error');
-            }
+            console.error('Erro ao buscar anamneses:', error);
+            Swal.fire('Erro', 'Falha ao buscar dados das anamneses', 'error');
         }
-    };
+    }, [pacienteId]);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setAnamnese(prev => ({ ...prev, [name]: value }));
-    };
+    useEffect(() => {
+        fetchAnamneses();
+    }, [fetchAnamneses]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSaveAnamnese = async (tipoAnamnese, respostas) => {
         try {
-            if (anamnese.id) {
-                await axios.put(`http://localhost:3000/anamneses/${anamnese.id}`, anamnese);
-            } else {
-                await axios.post('http://localhost:3000/anamneses', { ...anamnese, paciente_id: pacienteId });
-            }
+            await axios.post('http://localhost:3000/anamneses', { paciente_id: pacienteId, tipo_anamnese: tipoAnamnese, respostas });
             Swal.fire('Sucesso', 'Anamnese salva com sucesso', 'success');
+            fetchAnamneses();
+            setTipoAnamnese('');
         } catch (error) {
             console.error('Erro ao salvar anamnese:', error);
             Swal.fire('Erro', 'Falha ao salvar anamnese', 'error');
+        }
+    };
+
+    const handleDeleteAnamnese = async (id) => {
+        try {
+            await axios.delete(`http://localhost:3000/anamneses/${id}`);
+            Swal.fire('Sucesso', 'Anamnese excluída com sucesso', 'success');
+            fetchAnamneses();
+        } catch (error) {
+            console.error('Erro ao excluir anamnese:', error);
+            Swal.fire('Erro', 'Não foi possível excluir a anamnese', 'error');
         }
     };
 
@@ -56,67 +53,31 @@ function Anamnese() {
         <div className="flex">
             <NavBar />
             <div className="flex-1 p-10">
-                <h1 className="text-2xl font-bold mb-4">Anamnese do Paciente</h1>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label htmlFor="historia_clinica" className="block text-sm font-medium text-gray-700">História Clínica:</label>
-                        <textarea
-                            id="historia_clinica"
-                            name="historia_clinica"
-                            value={anamnese.historia_clinica}
-                            onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            rows="4"
-                        ></textarea>
+                <h1 className="text-2xl font-bold mb-4">Anamneses do Paciente</h1>
+                <select
+                    value={tipoAnamnese}
+                    onChange={(e) => setTipoAnamnese(e.target.value)}
+                    className="mb-4 p-2 border rounded"
+                >
+                    <option value="">Selecione o tipo de anamnese</option>
+                    <option value="estetica">Estética</option>
+                    <option value="facial">Facial</option>
+                    <option value="corporal">Corporal</option>
+                </select>
+                {tipoAnamnese && (
+                    <AnamneseForm 
+                        tipoAnamnese={tipoAnamnese}
+                        onSave={handleSaveAnamnese}
+                    />
+                )}
+                <h2 className="text-xl font-bold mt-8 mb-4">Anamneses Existentes</h2>
+                {anamneses.map(anamnese => (
+                    <div key={anamnese.id} className="mb-4 p-4 border rounded">
+                        <p>Tipo: {anamnese.tipo_anamnese}</p>
+                        <button onClick={() => navigate(`/editar-anamnese/${anamnese.id}`)} className="mr-2 bg-blue-500 text-white p-2 rounded">Editar</button>
+                        <button onClick={() => handleDeleteAnamnese(anamnese.id)} className="bg-red-500 text-white p-2 rounded">Excluir</button>
                     </div>
-                    <div>
-                        <label htmlFor="medicacoes_atuais" className="block text-sm font-medium text-gray-700">Medicações Atuais:</label>
-                        <textarea
-                            id="medicacoes_atuais"
-                            name="medicacoes_atuais"
-                            value={anamnese.medicacoes_atuais}
-                            onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            rows="3"
-                        ></textarea>
-                    </div>
-                    <div>
-                        <label htmlFor="alergias" className="block text-sm font-medium text-gray-700">Alergias:</label>
-                        <input
-                            type="text"
-                            id="alergias"
-                            name="alergias"
-                            value={anamnese.alergias}
-                            onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="habitos_vida" className="block text-sm font-medium text-gray-700">Hábitos de Vida:</label>
-                        <textarea
-                            id="habitos_vida"
-                            name="habitos_vida"
-                            value={anamnese.habitos_vida}
-                            onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            rows="3"
-                        ></textarea>
-                    </div>
-                    <div>
-                        <label htmlFor="antecedentes_familiares" className="block text-sm font-medium text-gray-700">Antecedentes Familiares:</label>
-                        <textarea
-                            id="antecedentes_familiares"
-                            name="antecedentes_familiares"
-                            value={anamnese.antecedentes_familiares}
-                            onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            rows="3"
-                        ></textarea>
-                    </div>
-                    <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Salvar Anamnese
-                    </button>
-                </form>
+                ))}
             </div>
         </div>
     );

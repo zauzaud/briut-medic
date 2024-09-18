@@ -3,9 +3,11 @@ const { Op } = require('sequelize');
 
 exports.criarAgendamento = async (req, res) => {
     try {
+        console.log('Dados recebidos:', req.body);
         const { paciente_id, medico_id, data_hora, data_hora_fim, servico, status, observacoes } = req.body;
         
-        if (!paciente_id || !medico_id || !data_hora || !data_hora_fim || !servico || !status) {
+        if (!paciente_id || !medico_id || !data_hora || !servico || !status) {
+            console.log('Dados inválidos:', { paciente_id, medico_id, data_hora, servico, status });
             return res.status(400).json({ mensagem: "Todos os campos obrigatórios devem ser preenchidos" });
         }
 
@@ -19,9 +21,10 @@ exports.criarAgendamento = async (req, res) => {
             observacoes
         });
 
+        console.log('Agendamento criado:', novoAgendamento);
         res.status(201).json(novoAgendamento);
     } catch (erro) {
-        console.error('Erro ao criar agendamento:', erro);
+        console.error('Erro detalhado ao criar agendamento:', erro);
         res.status(500).json({ mensagem: "Erro ao criar agendamento", erro: erro.message });
     }
 };

@@ -1,75 +1,82 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { Calendar } from 'primereact/calendar';
-import { addLocale, locale } from 'primereact/api';
+import FullCalendar from '@fullcalendar/react';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
+import ptBrLocale from '@fullcalendar/core/locales/pt-br';
 import NavBar from './NavBar';
-import 'primereact/resources/themes/saga-blue/theme.css';
-import 'primereact/resources/primereact.min.css';
-import 'primeicons/primeicons.css';
-
-// Configuração do locale em português do Brasil
-addLocale('pt-BR', {
-    firstDayOfWeek: 0,
-    dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
-    dayNamesShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
-    dayNamesMin: ['Do', 'Se', 'Te', 'Qa', 'Qi', 'Sx', 'Sa'],
-    monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
-    monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-    today: 'Hoje',
-    clear: 'Limpar'
-});
-
-// Define o locale padrão como português do Brasil
-locale('pt-BR');
 
 function Calendario() {
     const [events, setEvents] = useState([]);
-    const [selectedDate, setSelectedDate] = useState(null);
 
-    useEffect(() => {
-        fetchEvents();
-    }, []);
+    const adjustTimezone = (date) => {
+        const offset = date.getTimezoneOffset();
+        return new Date(date.getTime() - (offset * 60 * 1000));
+    };
 
-    const fetchEvents = async (date = null) => {
+    const fetchEvents = useCallback(async () => {
         try {
-            let url = 'http://localhost:3000/agendamentos';
-            if (date) {
-                const formattedDate = date.toISOString().split('T')[0];
-                url += `?date=${formattedDate}`;
-            }
-            const response = await axios.get(url);
-            const formattedEvents = response.data.map(e => ({
-                ...e,
-                start: new Date(e.data_hora),
-                end: new Date(e.data_hora_fim),
-                title: e.servico
-            }));
+            const response = await axios.get('http://localhost:3000/agendamentos');
+            const formattedEvents = response.data.map(e => {
+                const start = adjustTimezone(new Date(e.data_hora));
+                const end = adjustTimezone(new Date(e.data_hora_fim));
+                return {
+                    id: e.id,
+                    title: `${e.servico} - Paciente: ${e.paciente_id}`,
+                    start: start,
+                    end: end,
+                    extendedProps: {
+                        paciente_id: e.paciente_id,
+                        medico_id: e.medico_id,
+                        status: e.status,
+                        observacoes: e.observacoes
+                    }
+                };
+            });
             setEvents(formattedEvents);
         } catch (error) {
             console.error('Erro ao buscar eventos:', error);
         }
+    }, []);
+
+    useEffect(() => {
+        fetchEvents();
+    }, [fetchEvents]);
+
+    const handleEventClick = (clickInfo) => {
+        Swal.fire({
+            title: 'Ações do Agendamento',
+            text: "O que você gostaria de fazer com este agendamento?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Editar',
+            cancelButtonText: 'Deletar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                handleEditAppointment(clickInfo.event);
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                handleDeleteAppointment(clickInfo.event.id);
+            }
+        });
     };
 
-    const handleDateSelect = (e) => {
-        setSelectedDate(e.value);
-        fetchEvents(e.value);
+    const handleDateClick = (dateClickInfo) => {
+        const adjustedDate = adjustTimezone(dateClickInfo.date);
+        handleAddAppointment(adjustedDate);
     };
 
-    const handleAddAppointment = () => {
-        if (!selectedDate) {
-            Swal.fire('Erro', 'Por favor, selecione uma data primeiro', 'error');
-            return;
-        }
-    
+    const handleAddAppointment = (date) => {
+        const formattedDate = date.toISOString().slice(0, 16);
         Swal.fire({
             title: 'Adicionar Novo Agendamento',
             html: `
                 <input id="paciente_id" class="swal2-input" placeholder="ID do Paciente">
                 <input id="medico_id" class="swal2-input" placeholder="ID do Médico">
                 <input id="servico" class="swal2-input" placeholder="Serviço">
-                <input id="data_hora" class="swal2-input" type="time">
-                <input id="data_hora_fim" class="swal2-input" type="time">
+                <input id="data_hora" class="swal2-input" type="datetime-local" value="${formattedDate}">
                 <select id="status" class="swal2-select">
                     <option value="agendado">Agendado</option>
                     <option value="confirmado">Confirmado</option>
@@ -80,56 +87,58 @@ function Calendario() {
             `,
             focusConfirm: false,
             preConfirm: () => {
-                const date = selectedDate.toISOString().split('T')[0];
-                const startTime = document.getElementById('data_hora').value;
-                const endTime = document.getElementById('data_hora_fim').value;
+                const inputDate = new Date(document.getElementById('data_hora').value);
+                const adjustedDate = adjustTimezone(inputDate);
+                const endDate = new Date(adjustedDate.getTime() + 30 * 60000); // 30 minutos após o início
                 return {
                     paciente_id: document.getElementById('paciente_id').value,
                     medico_id: document.getElementById('medico_id').value,
                     servico: document.getElementById('servico').value,
-                    data_hora: `${date}T${startTime}:00`,
-                    data_hora_fim: `${date}T${endTime}:00`,
+                    data_hora: adjustedDate.toISOString(),
+                    data_hora_fim: endDate.toISOString(),
                     status: document.getElementById('status').value,
                     observacoes: document.getElementById('observacoes').value
                 };
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.post('http://localhost:3000/agendamentos', result.value)
-                    .then(response => {
-                        fetchEvents(selectedDate);
-                        Swal.fire('Sucesso', 'Agendamento criado com sucesso!', 'success');
-                    })
-                    .catch(error => {
-                        console.error('Erro ao criar agendamento:', error);
-                        Swal.fire('Erro', 'Não foi possível criar o agendamento', 'error');
-                    });
+                if (checkOverlap(result.value)) {
+                    Swal.fire('Erro', 'Já existe um agendamento neste horário', 'error');
+                } else {
+                    axios.post('http://localhost:3000/agendamentos', result.value)
+                        .then(response => {
+                            fetchEvents();
+                            Swal.fire('Sucesso', 'Agendamento criado com sucesso!', 'success');
+                        })
+                        .catch(error => {
+                            console.error('Erro detalhado ao criar agendamento:', error.response ? error.response.data : error.message);
+                            Swal.fire('Erro', `Não foi possível criar o agendamento: ${error.response ? error.response.data : error.message}`, 'error');
+                        });
+                }
             }
         });
     };
+
     const handleEditAppointment = (event) => {
         Swal.fire({
             title: 'Editar Agendamento',
             html: `
-                <input id="servico" class="swal2-input" value="${event.servico}" placeholder="Serviço">
-                <input id="data_hora" class="swal2-input" type="time" value="${event.start.toTimeString().slice(0,5)}">
-                <input id="data_hora_fim" class="swal2-input" type="time" value="${event.end.toTimeString().slice(0,5)}">
+                <input id="servico" class="swal2-input" value="${event.title.split(' - ')[0]}" placeholder="Serviço">
+                <input id="data_hora" class="swal2-input" type="datetime-local" value="${event.start.toISOString().slice(0, 16)}">
                 <select id="status" class="swal2-select">
-                    <option value="agendado" ${event.status === 'agendado' ? 'selected' : ''}>Agendado</option>
-                    <option value="confirmado" ${event.status === 'confirmado' ? 'selected' : ''}>Confirmado</option>
-                    <option value="concluido" ${event.status === 'concluido' ? 'selected' : ''}>Concluído</option>
-                    <option value="cancelado" ${event.status === 'cancelado' ? 'selected' : ''}>Cancelado</option>
+                    <option value="agendado" ${event.extendedProps.status === 'agendado' ? 'selected' : ''}>Agendado</option>
+                    <option value="confirmado" ${event.extendedProps.status === 'confirmado' ? 'selected' : ''}>Confirmado</option>
+                    <option value="concluido" ${event.extendedProps.status === 'concluido' ? 'selected' : ''}>Concluído</option>
+                    <option value="cancelado" ${event.extendedProps.status === 'cancelado' ? 'selected' : ''}>Cancelado</option>
                 </select>
             `,
             focusConfirm: false,
             preConfirm: () => {
-                const date = event.start.toISOString().split('T')[0];
-                const startTime = document.getElementById('data_hora').value;
-                const endTime = document.getElementById('data_hora_fim').value;
+                const inputDate = new Date(document.getElementById('data_hora').value);
+                const adjustedDate = adjustTimezone(inputDate);
                 return {
                     servico: document.getElementById('servico').value,
-                    data_hora: `${date}T${startTime}:00`,
-                    data_hora_fim: `${date}T${endTime}:00`,
+                    data_hora: adjustedDate.toISOString(),
                     status: document.getElementById('status').value
                 };
             }
@@ -137,7 +146,7 @@ function Calendario() {
             if (result.isConfirmed) {
                 axios.put(`http://localhost:3000/agendamentos/${event.id}`, result.value)
                     .then(response => {
-                        fetchEvents(selectedDate);
+                        fetchEvents();
                         Swal.fire('Sucesso', 'Agendamento atualizado com sucesso!', 'success');
                     })
                     .catch(error => {
@@ -148,7 +157,7 @@ function Calendario() {
         });
     };
 
-    const handleDeleteAppointment = (event) => {
+    const handleDeleteAppointment = (eventId) => {
         Swal.fire({
             title: 'Tem certeza?',
             text: "Você não poderá reverter esta ação!",
@@ -159,9 +168,9 @@ function Calendario() {
             confirmButtonText: 'Sim, delete!'
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.delete(`http://localhost:3000/agendamentos/${event.id}`)
-                    .then(response => {
-                        fetchEvents(selectedDate);
+                axios.delete(`http://localhost:3000/agendamentos/${eventId}`)
+                    .then(() => {
+                        fetchEvents();
                         Swal.fire('Deletado!', 'O agendamento foi removido.', 'success');
                     })
                     .catch(error => {
@@ -172,51 +181,42 @@ function Calendario() {
         });
     };
 
+    const checkOverlap = (newEvent) => {
+        const newStart = new Date(newEvent.data_hora);
+        const newEnd = new Date(newStart.getTime() + 30 * 60000); // Assumindo consultas de 30 minutos
+
+        return events.some(existingEvent => {
+            const existingStart = new Date(existingEvent.start);
+            const existingEnd = new Date(existingEvent.end);
+
+            return (newStart < existingEnd && newEnd > existingStart);
+        });
+    };
+
     return (
         <div className="flex">
             <NavBar />
             <div className='flex-1 p-10'>
-                <div className="card">
-                    <Calendar 
-                        value={selectedDate}
-                        onChange={handleDateSelect}
-                        inline 
-                        dateFormat="dd/mm/yy"
-                        monthNavigator
-                        yearNavigator
-                        yearRange="2020:2030"
-                        showWeek={false}
-                        locale="pt-BR"
-                        firstDayOfWeek={0}
-                        className="custom-calendar"
-                    />
-                </div>
-                <button onClick={handleAddAppointment} className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Adicionar Agendamento
-                </button>
-                <div className="mt-4">
-                    <h2 className="text-xl font-bold mb-2">Agendamentos do Dia</h2>
-                    <ul>
-                        {events.map(event => (
-                            <li key={event.id} className="mb-2 p-2 border rounded flex justify-between items-center">
-                                <div>
-                                    <p>Data: {event.start.toLocaleDateString('pt-BR')}</p>
-                                    <p>Serviço: {event.servico}</p>
-                                    <p>Horário: {event.start.toLocaleTimeString('pt-BR')} - {event.end.toLocaleTimeString('pt-BR')}</p>
-                                    <p>Status: {event.status}</p>
-                                </div>
-                                <div>
-                                    <button onClick={() => handleEditAppointment(event)} className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded mr-2">
-                                        Editar
-                                    </button>
-                                    <button onClick={() => handleDeleteAppointment(event)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
-                                        Excluir
-                                    </button>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+                <FullCalendar
+                    plugins={[timeGridPlugin, interactionPlugin]}
+                    initialView="timeGridWeek"
+                    slotMinTime="08:00:00"
+                    slotMaxTime="18:00:00"
+                    allDaySlot={false}
+                    weekends={true}
+                    events={events}
+                    eventClick={handleEventClick}
+                    dateClick={handleDateClick}
+                    eventOverlap={false}
+                    slotDuration="00:30:00"
+                    locale={ptBrLocale}
+                    timeZone='local'
+                    headerToolbar={{
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'timeGridWeek,timeGridDay'
+                    }}
+                />
             </div>
         </div>
     );

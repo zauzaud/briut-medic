@@ -10,6 +10,7 @@ import Estoque from './components/Estoque';
 import Financeiro from './components/Financeiro';
 import FinanceiroForm from './components/FinanceiroForm';
 import Anamnese from './components/Anamnese';
+import EditarAnamnese from './components/EditarAnamnese';
 import ListaAnamneses from './components/ListaAnamneses';
 import NotFound from './components/NotFound';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -35,6 +36,8 @@ function App() {
           {/* Rotas de Anamnese */}
           <Route path="/anamnese/:pacienteId" element={<Anamnese />} />
           <Route path="/anamneses" element={<ListaAnamneses />} />
+          <Route path="/editar-anamnese/:id" element={<EditarAnamnese />} />
+
 
           
           {/* Outras Rotas */}

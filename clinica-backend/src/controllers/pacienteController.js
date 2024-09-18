@@ -1,4 +1,3 @@
-// clinica-backend/src/controllers/pacienteController.js
 const Paciente = require('../models/Paciente');
 
 exports.criarPaciente = async (req, res) => {
