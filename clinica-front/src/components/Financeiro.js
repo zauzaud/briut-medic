@@ -26,11 +26,11 @@ function Financeiro() {
     const [transacoes, setTransacoes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [errorDetails, setErrorDetails] = useState('');
 
     useEffect(() => {
-        axios.get('http://localhost:3000/financeiro')
+        axios.get('http://localhost:3000/api/financeiro')
             .then(response => {
-                // Converter o valor para número
                 const transacoesFormatadas = response.data.map(t => ({
                     ...t,
                     valor: parseFloat(t.valor)
@@ -41,6 +41,7 @@ function Financeiro() {
             .catch(error => {
                 console.error('Erro ao buscar transações:', error);
                 setError('Falha ao buscar dados financeiros');
+                setErrorDetails(error.response?.data?.mensagem || error.message);
                 setLoading(false);
             });
     }, []);
@@ -72,7 +73,12 @@ function Financeiro() {
     }
 
     if (error) {
-        return <div>{error}</div>;
+        return (
+            <div>
+                <p>{error}</p>
+                <p>Detalhes do erro: {errorDetails}</p>
+            </div>
+        );
     }
 
     return (

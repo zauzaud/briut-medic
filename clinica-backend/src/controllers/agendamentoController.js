@@ -17,11 +17,27 @@ exports.listarAgendamentos = async (req, res) => {
         const agendamentos = await Agendamento.findAll({
             include: [
                 { model: Servico },
-                { model: Usuario, as: 'Profissional' },
-                { model: Paciente }
+                { model: Usuario, as: 'Profissional', attributes: ['id', 'nome'] },
+                { model: Paciente, attributes: ['id', 'nome'] }
             ]
         });
-        res.json(agendamentos);
+        const formattedAgendamentos = agendamentos.map(a => ({
+            id: a.id,
+            title: `${a.Servico.nome} - ${a.Paciente.nome}`,
+            start: a.data_hora,
+            end: a.data_hora_fim,
+            extendedProps: {
+                paciente_id: a.paciente_id,
+                paciente_nome: a.Paciente.nome,
+                profissional_id: a.profissional_id,
+                profissional_nome: a.Profissional.nome,
+                servico_id: a.servico_id,
+                servico_nome: a.Servico.nome,
+                status: a.status,
+                observacoes: a.observacoes
+            }
+        }));
+        res.json(formattedAgendamentos);
     } catch (erro) {
         res.status(500).json({ mensagem: "Erro ao listar agendamentos", erro: erro.message });
     }

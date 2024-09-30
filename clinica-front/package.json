@@ -28,6 +28,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.23.0",
     "react-scripts": "^5.0.1",
+    "react-select": "^5.8.0",
     "sweetalert2": "^11.10.8",
     "web-vitals": "^3.5.2",
     "yup": "^1.4.0"

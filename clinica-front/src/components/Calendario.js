@@ -9,6 +9,9 @@ import NavBar from './NavBar';
 
 function Calendario() {
     const [events, setEvents] = useState([]);
+    const [filteredEvents, setFilteredEvents] = useState([]);
+    const [profissionais, setProfissionais] = useState([]);
+    const [selectedProfissional, setSelectedProfissional] = useState('');
 
     const adjustTimezone = (date) => {
         const offset = date.getTimezoneOffset();
@@ -43,6 +46,28 @@ function Calendario() {
     useEffect(() => {
         fetchEvents();
     }, [fetchEvents]);
+
+    const fetchProfissionais = useCallback(async () => {
+        try {
+            const response = await axios.get('http://localhost:3000/usuarios');
+            setProfissionais(response.data.filter(u => u.tipo !== 'Admin' && u.tipo !== 'Recepcionista'));
+        } catch (error) {
+            console.error('Erro ao buscar profissionais:', error);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchEvents();
+        fetchProfissionais();
+    }, [fetchEvents, fetchProfissionais]);
+
+    useEffect(() => {
+        if (selectedProfissional) {
+            setFilteredEvents(events.filter(event => event.extendedProps.profissional_id === selectedProfissional));
+        } else {
+            setFilteredEvents(events);
+        }
+    }, [selectedProfissional, events]);
 
     const handleEventClick = (clickInfo) => {
         Swal.fire({
@@ -197,6 +222,18 @@ function Calendario() {
         <div className="flex">
             <NavBar />
             <div className='flex-1 p-10'>
+                <div className="mb-4">
+                    <select
+                        value={selectedProfissional}
+                        onChange={(e) => setSelectedProfissional(e.target.value)}
+                        className="p-2 border rounded"
+                    >
+                        <option value="">Todos os profissionais</option>
+                        {profissionais.map(prof => (
+                            <option key={prof.id} value={prof.id}>{prof.nome}</option>
+                        ))}
+                    </select>
+                </div>
                 <FullCalendar
                     plugins={[timeGridPlugin, interactionPlugin]}
                     initialView="timeGridWeek"
@@ -204,7 +241,7 @@ function Calendario() {
                     slotMaxTime="18:00:00"
                     allDaySlot={false}
                     weekends={true}
-                    events={events}
+                    events={filteredEvents}
                     eventClick={handleEventClick}
                     dateClick={handleDateClick}
                     eventOverlap={false}
@@ -216,9 +253,21 @@ function Calendario() {
                         center: 'title',
                         right: 'timeGridWeek,timeGridDay'
                     }}
+                    eventContent={renderEventContent}
                 />
             </div>
         </div>
+    );
+}
+
+function renderEventContent(eventInfo) {
+    return (
+        <>
+            <b>{eventInfo.timeText}</b>
+            <i>{eventInfo.event.title}</i>
+            <div>Paciente: {eventInfo.event.extendedProps.paciente_nome}</div>
+            <div>Status: {eventInfo.event.extendedProps.status}</div>
+        </>
     );
 }
 

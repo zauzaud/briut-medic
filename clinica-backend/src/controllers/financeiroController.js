@@ -12,16 +12,12 @@ exports.criarTransacao = async (req, res) => {
 };
 
 exports.listarTransacoes = async (req, res) => {
+    console.log('Rota /api/financeiro acessada');
     try {
-        const transacoes = await Financeiro.findAll({
-            include: [
-                { model: Agendamento },
-                { model: Usuario, as: 'Profissional' },
-                { model: Paciente }
-            ]
-        });
+        const transacoes = await Financeiro.findAll();
         res.json(transacoes);
     } catch (erro) {
+        console.error('Erro ao listar transações:', erro);
         res.status(500).json({ mensagem: "Erro ao listar transações", erro: erro.message });
     }
 };

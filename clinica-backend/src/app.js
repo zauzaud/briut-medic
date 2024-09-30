@@ -29,7 +29,7 @@ app.use('/usuarios', usuarioRoutes);
 app.use('/pacientes', pacienteRoutes);
 app.use('/agendamentos', agendamentoRoutes);
 app.use('/estoque', estoqueRoutes);
-app.use('/financeiro', financeiroRoutes);
+app.use('/api/financeiro', financeiroRoutes);
 app.use('/anamneses', anamneseRoutes);
 app.use('/api/servicos', servicoRoutes);
 app.use('/api/comissoes', comissaoProfissionalRoutes);
