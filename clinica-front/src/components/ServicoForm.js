@@ -1,80 +1,86 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
+import NavBar from './NavBar';
 
 function ServicoForm() {
-    const [servico, setServico] = useState({ nome: '', duracao: '', preco: '', descricao: '' });
-    const { id } = useParams();
-    const navigate = useNavigate();
+    const [servicos, setServicos] = useState([]);
+    const [novoServico, setNovoServico] = useState({ nome: '', duracao: '', preco: '' });
 
     useEffect(() => {
-        if (id) {
-            fetchServico();
-        }
-    }, [id]);
+        fetchServicos();
+    }, []);
 
-    const fetchServico = async () => {
+    const fetchServicos = async () => {
         try {
-            const response = await axios.get(`http://localhost:3000/api/servicos/${id}`);
-            setServico(response.data);
+            const response = await axios.get('http://localhost:3000/servicos');
+            setServicos(response.data);
         } catch (error) {
-            console.error('Erro ao buscar serviço:', error);
+            console.error('Erro ao buscar serviços:', error);
+            Swal.fire('Erro', 'Não foi possível carregar os serviços', 'error');
         }
     };
 
-    const handleChange = (e) => {
-        setServico({ ...servico, [e.target.name]: e.target.value });
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setNovoServico({ ...novoServico, [name]: value });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            if (id) {
-                await axios.put(`http://localhost:3000/api/servicos/${id}`, servico);
-            } else {
-                await axios.post('http://localhost:3000/api/servicos', servico);
-            }
-            navigate('/servicos');
+            await axios.post('http://localhost:3000/servicos', novoServico);
+            Swal.fire('Sucesso', 'Serviço adicionado com sucesso', 'success');
+            setNovoServico({ nome: '', duracao: '', preco: '' });
+            fetchServicos();
         } catch (error) {
-            console.error('Erro ao salvar serviço:', error);
+            console.error('Erro ao adicionar serviço:', error);
+            Swal.fire('Erro', 'Não foi possível adicionar o serviço', 'error');
         }
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input
-                type="text"
-                name="nome"
-                value={servico.nome}
-                onChange={handleChange}
-                placeholder="Nome do Serviço"
-                required
-            />
-            <input
-                type="number"
-                name="duracao"
-                value={servico.duracao}
-                onChange={handleChange}
-                placeholder="Duração (minutos)"
-                required
-            />
-            <input
-                type="number"
-                name="preco"
-                value={servico.preco}
-                onChange={handleChange}
-                placeholder="Preço"
-                step="0.01"
-                required
-            />
-            <textarea
-                name="descricao"
-                value={servico.descricao}
-                onChange={handleChange}
-                placeholder="Descrição"
-            />
-            <button type="submit">{id ? 'Atualizar' : 'Criar'} Serviço</button>
-        </form>
+        <div className="flex">
+            <NavBar />
+            <div className="flex-1 p-10">
+                <h1 className="text-2xl font-bold mb-4">Gerenciar Serviços</h1>
+                <form onSubmit={handleSubmit} className="mb-8">
+                    <input
+                        type="text"
+                        name="nome"
+                        value={novoServico.nome}
+                        onChange={handleInputChange}
+                        placeholder="Nome do serviço"
+                        className="mr-2 p-2 border rounded"
+                    />
+                    <input
+                        type="number"
+                        name="duracao"
+                        value={novoServico.duracao}
+                        onChange={handleInputChange}
+                        placeholder="Duração (minutos)"
+                        className="mr-2 p-2 border rounded"
+                    />
+                    <input
+                        type="number"
+                        name="preco"
+                        value={novoServico.preco}
+                        onChange={handleInputChange}
+                        placeholder="Preço"
+                        className="mr-2 p-2 border rounded"
+                    />
+                    <button type="submit" className="bg-blue-500 text-white p-2 rounded">Adicionar Serviço</button>
+                </form>
+                <h2 className="text-xl font-bold mb-2">Serviços Existentes</h2>
+                <ul>
+                    {servicos.map(servico => (
+                        <li key={servico.id} className="mb-2">
+                            {servico.nome} - {servico.duracao} minutos - R$ {servico.preco}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </div>
     );
 }
 

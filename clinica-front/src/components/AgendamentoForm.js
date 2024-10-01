@@ -9,6 +9,7 @@ function AgendamentoForm() {
         profissional_id: '',
         servico_id: '',
         data_hora: '',
+        data_hora_fim: '',
         status: 'Agendado',
         observacoes: ''
     });
@@ -19,7 +20,6 @@ function AgendamentoForm() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        console.log('Componente montado. ID:', id);
         fetchPacientes();
         fetchProfissionais();
         fetchServicos();
@@ -71,25 +71,15 @@ function AgendamentoForm() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setAgendamento(prev => {
-            const updated = { ...prev, [name]: value };
-            console.log(`Campo ${name} atualizado para:`, value);
-            console.log('Estado do agendamento atualizado:', updated);
-            return updated;
-        });
+        setAgendamento(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Dados do agendamento antes do envio:', agendamento);
-
-        // Verificação adicional antes do envio
-        if (!agendamento.profissional_id || !agendamento.servico_id) {
-            console.error('profissional_id ou servico_id estão vazios');
-            Swal.fire('Erro', 'Por favor, selecione um profissional e um serviço', 'error');
+        if (!agendamento.paciente_id || !agendamento.profissional_id || !agendamento.servico_id || !agendamento.data_hora) {
+            Swal.fire('Erro', 'Todos os campos são obrigatórios', 'error');
             return;
         }
-
         try {
             const dataToSend = {
                 ...agendamento,
@@ -97,11 +87,17 @@ function AgendamentoForm() {
                 profissional_id: parseInt(agendamento.profissional_id),
                 servico_id: parseInt(agendamento.servico_id)
             };
-            console.log('Dados sendo enviados para o servidor:', dataToSend);
-            
+
+            // Calcular data_hora_fim (1 hora após data_hora)
+            const dataHora = new Date(agendamento.data_hora);
+            const dataHoraFim = new Date(dataHora.getTime() + 60 * 60 * 1000);
+            dataToSend.data_hora_fim = dataHoraFim.toISOString();
+
+            console.log('Dados sendo enviados:', dataToSend);
+
             const url = id 
-                ? `http://localhost:3000/api/agendamentos/${id}`
-                : 'http://localhost:3000/api/agendamentos';
+                ? `http://localhost:3000/agendamentos/${id}`
+                : 'http://localhost:3000/agendamentos';
             
             const method = id ? 'put' : 'post';
             
@@ -126,7 +122,7 @@ function AgendamentoForm() {
                     value={agendamento.paciente_id}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 >
                     <option value="">Selecione o Paciente</option>
                     {pacientes.map(paciente => (
@@ -143,11 +139,11 @@ function AgendamentoForm() {
                     value={agendamento.profissional_id}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 >
                     <option value="">Selecione o Profissional</option>
                     {profissionais.map(profissional => (
-                        <option key={profissional.id} value={profissional.id}>{profissional.nome} ({profissional.tipo})</option>
+                        <option key={profissional.id} value={profissional.id}>{profissional.nome}</option>
                     ))}
                 </select>
             </div>
@@ -160,7 +156,7 @@ function AgendamentoForm() {
                     value={agendamento.servico_id}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 >
                     <option value="">Selecione o Serviço</option>
                     {servicos.map(servico => (
@@ -178,7 +174,7 @@ function AgendamentoForm() {
                     value={agendamento.data_hora}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 />
             </div>
 
@@ -190,7 +186,7 @@ function AgendamentoForm() {
                     value={agendamento.status}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 >
                     <option value="Agendado">Agendado</option>
                     <option value="Confirmado">Confirmado</option>
@@ -207,19 +203,16 @@ function AgendamentoForm() {
                     value={agendamento.observacoes}
                     onChange={handleChange}
                     rows="3"
-                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="Observações adicionais"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 />
             </div>
 
-            <div>
-                <button
-                    type="submit"
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                    {id ? 'Atualizar' : 'Criar'} Agendamento
-                </button>
-            </div>
+            <button
+                type="submit"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+                {id ? 'Atualizar' : 'Criar'} Agendamento
+            </button>
         </form>
     );
 }

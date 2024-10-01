@@ -31,7 +31,7 @@ app.use('/agendamentos', agendamentoRoutes);
 app.use('/estoque', estoqueRoutes);
 app.use('/api/financeiro', financeiroRoutes);
 app.use('/anamneses', anamneseRoutes);
-app.use('/api/servicos', servicoRoutes);
+app.use('/servicos', servicoRoutes);
 app.use('/api/comissoes', comissaoProfissionalRoutes);
 
 module.exports = app;

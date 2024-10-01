@@ -5,8 +5,15 @@ const agendamentoController = require('../controllers/agendamentoController');
 // Rota para criar um novo agendamento.
 router.post('/', agendamentoController.criarAgendamento);
 
-// Rota para listar todos os agendamentos.
-router.get('/', agendamentoController.listarAgendamentos);
+router.get('/', async (req, res) => {
+    try {
+        const agendamentos = await agendamentoController.listarAgendamentos();
+        res.json(agendamentos);
+    } catch (error) {
+        console.error('Erro ao listar agendamentos:', error);
+        res.status(500).json({ message: 'Erro interno do servidor', error: error.message });
+    }
+});
 
 // Rota para buscar um agendamento por ID.
 router.get('/:id', agendamentoController.buscarAgendamentoPorId);

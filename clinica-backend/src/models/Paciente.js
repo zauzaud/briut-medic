@@ -19,7 +19,8 @@ const Paciente = sequelize.define('Paciente', {
         type: DataTypes.STRING(20)
     },
     data_nascimento: {
-        type: DataTypes.DATE
+        type: DataTypes.DATEONLY,
+        allowNull: true
     },
     genero: {
         type: DataTypes.STRING(20)

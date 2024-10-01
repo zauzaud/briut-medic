@@ -48,11 +48,11 @@ function App() {
           <Route path="/estoque" element={<Estoque />} />
           <Route path="/financeiro" element={<Financeiro />} />
           <Route path="/financeiro/novo" element={<FinanceiroForm />} />
-          <Route path="/agendamentos/novo" component={AgendamentoForm} />
-          <Route path="/agendamentos/editar/:id" component={AgendamentoForm} />
-          <Route path="/servicos/novo" component={ServicoForm} />
-          <Route path="/servicos/editar/:id" component={ServicoForm} />
-          <Route path="/comissoes" component={ComissoesList} />
+          <Route path="/agendamentos/novo" element={<AgendamentoForm />} />
+          <Route path="/agendamentos/editar/:id" element={<AgendamentoForm />} />
+          <Route path="/servicos/novo" element={<ServicoForm />} />
+          <Route path="/servicos/editar/:id" element={<ServicoForm />} />
+          <Route path="/comissoes" element={<ComissoesList />} />
           
           {/* Rota de Erro */}
           <Route path="*" element={<NotFound />} />

@@ -5,10 +5,26 @@ const Paciente = require('../models/Paciente');
 
 exports.criarAgendamento = async (req, res) => {
     try {
-        const novoAgendamento = await Agendamento.create(req.body);
+        const { paciente_id, profissional_id, servico_id, data_hora, data_hora_fim, status, observacoes } = req.body;
+        
+        if (!paciente_id || !profissional_id || !servico_id || !data_hora || !data_hora_fim || !status) {
+            return res.status(400).json({ mensagem: "Todos os campos obrigatórios devem ser preenchidos" });
+        }
+
+        const novoAgendamento = await Agendamento.create({
+            paciente_id,
+            profissional_id,
+            servico_id,
+            data_hora,
+            data_hora_fim,
+            status,
+            observacoes
+        });
+
         res.status(201).json(novoAgendamento);
     } catch (erro) {
-        res.status(400).json({ mensagem: "Erro ao criar agendamento", erro: erro.message });
+        console.error('Erro ao criar agendamento:', erro);
+        res.status(500).json({ mensagem: "Erro ao criar agendamento", erro: erro.message });
     }
 };
 

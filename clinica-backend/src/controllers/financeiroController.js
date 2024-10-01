@@ -4,9 +4,12 @@ const ComissaoProfissional = require('../models/ComissaoProfissional');
 
 exports.criarTransacao = async (req, res) => {
     try {
+        console.log('Dados recebidos:', req.body); // Log para depuração
         const novaTransacao = await Financeiro.create(req.body);
+        console.log('Transação criada:', novaTransacao); // Log para depuração
         res.status(201).json(novaTransacao);
     } catch (erro) {
+        console.error('Erro ao criar transação:', erro);
         res.status(400).json({ mensagem: "Erro ao criar transação", erro: erro.message });
     }
 };

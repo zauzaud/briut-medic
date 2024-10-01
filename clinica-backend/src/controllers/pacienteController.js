@@ -11,12 +11,13 @@ exports.criarPaciente = async (req, res) => {
 
 exports.listarPacientes = async (req, res) => {
     try {
-        const pacientes = await Paciente.findAll();
-        res.json(pacientes);
+      const pacientes = await Paciente.findAll();
+      res.json(pacientes);
     } catch (erro) {
-        res.status(500).json({ mensagem: "Erro ao listar pacientes", erro: erro.message });
+      console.error('Erro ao listar pacientes:', erro);
+      res.status(500).json({ mensagem: "Erro ao listar pacientes", erro: erro.message });
     }
-};
+  };
 
 exports.buscarPacientePorId = async (req, res) => {
     try {

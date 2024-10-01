@@ -39,10 +39,4 @@ const Agendamento = sequelize.define('Agendamento', {
     timestamps: false
 });
 
-Agendamento.associate = (models) => {
-    Agendamento.belongsTo(models.Paciente, { foreignKey: 'paciente_id' });
-    Agendamento.belongsTo(models.Usuario, { foreignKey: 'profissional_id' });
-    Agendamento.belongsTo(models.Servico, { foreignKey: 'servico_id' });
-};
-
 module.exports = Agendamento;

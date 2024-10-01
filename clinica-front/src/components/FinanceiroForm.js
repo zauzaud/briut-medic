@@ -20,8 +20,8 @@ function FinanceiroForm() {
                 data,
                 usuario_id: usuarioId  // Adicionando o ID do usuário enviado
             };
-            const response = await axios.post('http://localhost:3000/financeiro', novaTransacao);
-            if (response.status === 201) {
+            const response = await axios.post('http://localhost:3000/api/financeiro', novaTransacao);
+                if (response.status === 201) {
                 Swal.fire({
                     title: 'Sucesso!',
                     text: 'Transação adicionada com sucesso!',
